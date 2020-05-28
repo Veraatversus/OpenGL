@@ -11,7 +11,7 @@ namespace OpenGL {
     private uint glProgram;
 
     public GLProgram(string[] vertexShaders, string[] fragmentShaders) {
-      int nullTerminator = 0;
+      int nullTerminator = -1;
 
       var glVertexShader = CAT(() => GL.CreateShader(ShaderType.VertexShader));
       CAT(() => GL.ShaderSource(glVertexShader, vertexShaders.Length, vertexShaders, ref nullTerminator));
@@ -26,6 +26,8 @@ namespace OpenGL {
       CAT(() => GL.AttachShader(glProgram, glFragmentShader));
       CAT(() => GL.LinkProgram(glProgram));
     }
+
+  
 
     public static GLProgram CreateFromFiles(string[] vertexShader, string[] fragmentShader) {
       var vsText = vertexShader.Select(vs => LoadFile(vs)).ToArray();
@@ -52,22 +54,36 @@ namespace OpenGL {
       //  builder.Append(reader.ReadLine());
       //}
       //return builder.ToString();
-      return File.ReadAllText(filename);
+      return File.ReadAllText(filename) + char.MinValue;
     }
+
+    public void Use() {
+      GL.UseProgram(glProgram);
+    }
+
     private static T CAT<T>(Func<T> action) {
       var result = action.Invoke();
-      var e = GL.GetError();
-      if (e != ErrorCode.NoError) {
-        throw new ProgramException($"OpenGL Error: {e}");
-      }
+      CheckAndThrow();
       return result;
     }
     private static void CAT(Action action) {
       action?.Invoke();
+      CheckAndThrow();
+    }
+
+    public static void CheckAndThrow() {
       var e = GL.GetError();
       if (e != ErrorCode.NoError) {
         throw new ProgramException($"OpenGL Error: {e}");
       }
+    }
+
+    public int GetUniformLocation(string variable) {
+      return GL.GetUniformLocation(glProgram, variable);
+    }
+
+    public int GetAttribLocation(string variable) {
+      return GL.GetAttribLocation(glProgram, variable);
     }
   }
 }
