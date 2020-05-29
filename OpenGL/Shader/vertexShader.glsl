@@ -4,11 +4,13 @@ uniform mat4 MVP;
 uniform mat4 Mit;
 uniform mat4 M;
 
-attribute vec3 vPos;
 attribute vec3 vNormal;
+attribute vec3 vPos;
+attribute vec3 vTc;
 
 varying vec3 normal;
 varying vec3 pos;
+varying vec3 tc;
 
 
 void main() {
