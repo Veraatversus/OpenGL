@@ -45,6 +45,7 @@ public:
   
   static Mat4 perspective(float fovy, float aspect, float znear, float zfar);
   static Mat4 ortho(float left, float right, float bottom, float top, float znear, float zfar );
+  static Mat4 lookAt(const Vec3& vEye, const Vec3& vAt, const Vec3& vUp);
   
   
 private:

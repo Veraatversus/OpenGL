@@ -1,11 +1,18 @@
 ﻿#version 110
 
 uniform mat4 MVP;
+uniform mat4 Mit;
+uniform mat4 M;
+
 attribute vec3 vPos;
-attribute vec3 vCol;
-varying vec3 color;
+attribute vec3 vNormal;
+
+varying vec3 normal;
+varying vec3 pos;
+
 
 void main() {
 	gl_Position = MVP * vec4(vPos, 1.0);
-	color = vCol;
+	pos = (M * vec4(vPos, 1.0)).xyz;
+	normal = (Mit * vec4(vNormal, 0.0)).xyz;
 }

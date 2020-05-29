@@ -13,6 +13,9 @@ class Vec3 {
 		friend std::ostream& operator<<(std::ostream &os, const Vec3& v) {os << v.toString() ; return os;}
 		const std::string toString() const;
 		
+		operator float*(void) {return e.data();}
+		operator const float*(void) const  {return e.data();}		
+		
 		float x() const;
 		float y() const;
 		float z() const;

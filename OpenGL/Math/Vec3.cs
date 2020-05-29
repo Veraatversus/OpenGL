@@ -3,12 +3,12 @@
   public class Vec3 {
 
     #region Public Properties
+    public float[] E { get; set; } = new float[3];
+    public float X { get => E[0]; set => E[0] = value; }
 
-    public float X { get; set; }
+    public float Y { get => E[1]; set => E[1] = value; }
 
-    public float Y { get; set; }
-
-    public float Z { get; set; }
+    public float Z { get => E[2]; set => E[2] = value; }
 
     public float R { get => X; set => X = value; }
 

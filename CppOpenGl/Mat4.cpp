@@ -325,3 +325,20 @@ Mat4 Mat4::ortho(float left, float right, float bottom, float top, float znear, 
 			0.0f, 0.0f, -2.0f/(zfar-znear), 0.0f,
 			-(right+left)/(right-left), -(top+bottom)/(top-bottom), -(zfar+znear)/(zfar-znear), 1.0f};
 }
+
+Mat4 Mat4::lookAt(const Vec3& vEye, const Vec3& vAt, const Vec3& vUp) {
+
+	Vec3 f{vAt-vEye};
+	Vec3 u{vUp};
+	Vec3 s{Vec3::cross(f,u)};
+	u = Vec3::cross(s,f);
+
+	f = Vec3::normalize(f);
+	u = Vec3::normalize(u);
+	s = Vec3::normalize(s);
+
+	return {s.x(), u.x(), -f.x(), 0.0f,
+			s.y(), u.y(), -f.y(), 0.0f,
+			s.z(), u.z(), -f.z(), 0.0f,
+			-Vec3::dot(s,vEye),-Vec3::dot(u,vEye),Vec3::dot(f,vEye),1.0};		
+}

@@ -14,13 +14,13 @@ namespace OpenGL {
 
     #region Public Constructors
 
-    public GLEnv(int width, int height, string titel) {
+    public GLEnv(int width, int height, string titel, int samples = 4) {
       SetErrorCallback(errorCallback);
       if (!Init()) {
         throw new GLException("Could not init Glfw.");
       }
 
-      WindowHint(Pencil.Gaming.WindowHint.Samples, 4);
+      WindowHint(Pencil.Gaming.WindowHint.Samples, samples);
 
       window = CreateWindow(width, height, titel, GlfwMonitorPtr.Null, GlfwWindowPtr.Null);
       if (window.Equals(GlfwWindowPtr.Null)) {

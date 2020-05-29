@@ -3,8 +3,11 @@
 #include <vector>
 #include <string>
 
-#include "glew.h"  
-#include "glfw3.h"
+#include <GL/glew.h>  
+#include <GLFW/glfw3.h>
+
+#include "Vec3.h"
+#include "Mat4.h"
 
 class ProgramException : public std::exception {
 	public:
@@ -25,7 +28,12 @@ public:
 	
 	GLint getUniformLocation(const std::string& name) const;
 	GLint getAttribLocation(const std::string& name) const;
-	void use() const;
+	
+	void setUniform(GLint id, float value) const;
+	void setUniform(GLint id, const Vec3& value) const;
+	void setUniform(GLint id, const Mat4& value, bool transpose=false) const;
+	
+	void enable() const;
 	
 private:
 	GLuint glVertexShader;
@@ -35,4 +43,6 @@ private:
 	GLProgram(const GLchar** vertexShaderTexts, GLsizei vsCount, const GLchar** framentShaderTexts, GLsizei fsCount);
 	static std::string loadFile(const std::string& filename);
 	static void checkAndThrow();
+	static void checkAndThrowShader(GLuint shader);
+	static void checkAndThrowProgram(GLuint program);	
 };

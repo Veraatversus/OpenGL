@@ -1,7 +1,14 @@
 ﻿#version 110
 
-varying vec3 color;
+uniform vec3 lightPos;
+
+varying vec3 normal;
+varying vec3 pos;
 
 void main() {
-	gl_FragColor = vec4(color, 1.0);
+	vec3 lightDir = normalize(lightPos - pos);
+
+	float diffuse = dot(lightDir, normalize(normal));
+
+	gl_FragColor = vec4(diffuse, diffuse, diffuse, 1.0);
 }

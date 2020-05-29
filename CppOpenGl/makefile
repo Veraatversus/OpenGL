@@ -1,9 +1,9 @@
 CC=g++
 CFLAGS=-c -Wall -std=c++17 -Wunreachable-code
 LFLAGS= -lglfw -lglew -framework OpenGL
-LIBS=-lomp 
+LIBS=
 INCLUDES=-I.
-SRC = GLProgram.cpp GLEnv.cpp main.cpp Mat4.cpp Vec3.cpp Rand.cpp
+SRC = Tesselation.cpp GLBuffer.cpp GLProgram.cpp GLEnv.cpp main.cpp Mat4.cpp Vec3.cpp Rand.cpp
 OBJ = $(SRC:.cpp=.o)
 TARGET = opengl
 

@@ -1,5 +1,8 @@
-﻿using System;
+﻿using Microsoft.VisualBasic;
+using System;
+using System.Net.Http.Headers;
 using System.Runtime.InteropServices;
+using System.Runtime.Intrinsics.X86;
 using System.Text;
 
 namespace MathR {
@@ -320,6 +323,22 @@ namespace MathR {
                       0, 2.0f / (top - bottom), 0, 0,
                       0, 0, -2.0f / (zfar - znear), 0,
                       -(right + left) / (right - left), -(top + bottom) / (top - bottom), -(zfar + znear) / (zfar - znear), 1);
+    }
+
+    public static Mat4 LookAt(Vec3 vEye, Vec3 vAt, Vec3 vUp) {
+      var f = vAt - vEye;
+      var u = vUp;
+      var s = f.Cross(u);
+      u = s.Cross(f);
+
+      f = f.Normalize();
+      u = u.Normalize();
+      s = s.Normalize();
+
+      return new Mat4(s.X, u.X, -f.X, 0,
+                      s.Y, u.Y, -f.Y, 0,
+                      s.Z, u.Z, -f.Z, 0,
+                      -s.Dot(vEye), -u.Dot(vEye), f.Dot(vEye), 1);
     }
 
     public override string ToString() {

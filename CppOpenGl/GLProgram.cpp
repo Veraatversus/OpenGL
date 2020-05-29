@@ -11,16 +11,16 @@ GLProgram::GLProgram(const GLchar** vertexShaderTexts, GLsizei vsCount, const GL
 {
 	glVertexShader = glCreateShader(GL_VERTEX_SHADER); checkAndThrow();
 	glShaderSource(glVertexShader, vsCount, vertexShaderTexts, NULL); checkAndThrow();
-	glCompileShader(glVertexShader); checkAndThrow();
-		
-	glFragmentShader = glCreateShader(GL_FRAGMENT_SHADER); checkAndThrow();
-	glShaderSource(glFragmentShader, vsCount, framentShaderTexts, NULL); checkAndThrow();
-	glCompileShader(glFragmentShader); checkAndThrow();
+	glCompileShader(glVertexShader); checkAndThrowShader(glVertexShader);
 	
+	glFragmentShader = glCreateShader(GL_FRAGMENT_SHADER); checkAndThrow();
+	glShaderSource(glFragmentShader, fsCount, framentShaderTexts, NULL); checkAndThrow();
+	glCompileShader(glFragmentShader); checkAndThrowShader(glFragmentShader);
+
 	glProgram = glCreateProgram(); checkAndThrow();
 	glAttachShader(glProgram, glVertexShader); checkAndThrow();
 	glAttachShader(glProgram, glFragmentShader); checkAndThrow();
-	glLinkProgram(glProgram); checkAndThrow();
+	glLinkProgram(glProgram); checkAndThrowProgram(glProgram);
 }
 
 
@@ -90,6 +90,46 @@ GLint GLProgram::getAttribLocation(const std::string& name) const {
 	return glGetAttribLocation(glProgram,name.c_str());
 }
 
-void GLProgram::use() const {
+void GLProgram::enable() const {
 	glUseProgram(glProgram);	
+}
+
+void GLProgram::setUniform(GLint id, float value) const {
+	glUniform1f(id, value);	
+}
+
+void GLProgram::setUniform(GLint id, const Vec3& value) const {
+	glUniform3fv(id, 1, value);	
+}
+
+void GLProgram::setUniform(GLint id, const Mat4& value, bool transpose) const {
+	glUniformMatrix4fv(id, 1, transpose, value);
+}
+
+void GLProgram::checkAndThrowShader(GLuint shader) {
+	GLint success[1] = { GL_TRUE };
+	glGetShaderiv(shader, GL_COMPILE_STATUS, success);
+	if(success[0] == GL_FALSE) {
+		GLint log_length{0};
+		glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &log_length);
+		log_length = std::min(static_cast<GLint>(4096), log_length);
+		std::vector<GLchar> log(log_length);
+		glGetShaderInfoLog(shader, static_cast<GLsizei>(log.size()), NULL, log.data());
+		std::string str{log.data()};
+		throw ProgramException{str};
+	}
+}
+
+void GLProgram::checkAndThrowProgram(GLuint program) {
+	GLint linked{GL_TRUE};
+	glGetProgramiv(program, GL_LINK_STATUS, &linked);
+	if(linked != GL_TRUE) {
+		GLint log_length{0};
+		glGetProgramiv(program, GL_INFO_LOG_LENGTH, &log_length);
+		log_length = std::min(static_cast<GLint>(4096), log_length);
+		std::vector<GLchar> log(log_length);
+		glGetProgramInfoLog(program, static_cast<GLsizei>(log.size()), NULL, log.data());
+		std::string str{log.data()};
+		throw ProgramException{str};
+	}		
 }
