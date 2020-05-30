@@ -55,11 +55,11 @@ GLProgram GLProgram::createFromStrings(const std::vector<std::string>& vs, const
 	return {vertexShaderTexts.data(), GLsizei(vs.size()), framentShaderTexts.data(), GLsizei(fs.size())};
 }
 
-GLProgram GLProgram::createFromFiles(const std::string& vs, const std::string& fs) {
+GLProgram GLProgram::createFromFile(const std::string& vs, const std::string& fs) {
 	return createFromFiles(std::vector<std::string>{vs}, std::vector<std::string>{fs});
 }
 
-GLProgram GLProgram::createFromStrings(const std::string& vs, const std::string& fs) {
+GLProgram GLProgram::createFromString(const std::string& vs, const std::string& fs) {
 	return createFromStrings(std::vector<std::string>{vs}, std::vector<std::string>{fs});
 }
 

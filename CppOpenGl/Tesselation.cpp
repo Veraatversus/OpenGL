@@ -81,3 +81,44 @@ Tesselation Tesselation::genSphere(const Vec3& center, const float radius, const
 	
 	return tess;
 }
+
+
+
+Tesselation Tesselation::genRectangle(const Vec3& center, const float width, const float height) {
+	Tesselation tess{};
+	
+	const float hWidth{width/2.0f};
+	const float hHeight{height/2.0f};
+	
+	tess.vertices = std::vector<float>{
+		-hWidth, -hHeight, 0.0f,
+		 hWidth, -hHeight, 0.0f,
+		 hWidth,  hHeight, 0.0f,
+		-hWidth,  hHeight, 0.0f
+	};	
+
+	tess.normals = std::vector<float>{
+		0.0f, 0.0f, 1.0f,
+		0.0f, 0.0f, 1.0f,
+		0.0f, 0.0f, 1.0f,
+		0.0f, 0.0f, 1.0f
+	};
+
+	tess.tangents = std::vector<float>{
+		1.0f, 0.0f, 0.0f,
+		1.0f, 0.0f, 0.0f,
+		1.0f, 0.0f, 0.0f,
+		1.0f, 0.0f, 0.0f
+	};
+
+	tess.texCoords = std::vector<float>{
+		0.0f, 0.0f,
+		1.0f, 0.0f,
+		1.0f, 1.0f,
+		0.0f, 1.0f
+	};
+	
+	tess.indices = std::vector<uint32_t>{0,1,2,0,2,3};
+	
+	return tess;
+}

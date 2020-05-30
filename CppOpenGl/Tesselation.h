@@ -6,6 +6,7 @@
 class Tesselation {
 	public:
 		static Tesselation genSphere(const Vec3& center, const float radius, const uint32_t sectorCount, const uint32_t stackCount);
+		static Tesselation genRectangle(const Vec3& center, const float width, const float height);
 
 		const std::vector<float>& getVertices() const {return vertices;}
 		const std::vector<float>& getNormals() const {return normals;}

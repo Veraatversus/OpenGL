@@ -94,8 +94,11 @@ namespace BMP {
 		
 		// make sure file exists.
 		std::ifstream file(filename.c_str(), std::ofstream::binary);
-		if (!file.is_open())
-			throw BMPException("Can't open BMP file");		
+		if (!file.is_open()) {
+			std::stringstream s;
+			s << "Can't open BMP file " << filename;
+			throw BMPException(s.str());
+		}
 		// make sure file can be read
 		uint16_t bfType;
 		if(!file.read((char*)&bfType, sizeof(short int)))

@@ -26,7 +26,7 @@ struct Dimensions {
 
 class GLEnv {
 	public:
-		GLEnv(uint32_t w, uint32_t h, uint32_t s, const std::string& title, bool fpsCounter=false, bool sync=true);
+		GLEnv(uint32_t w, uint32_t h, uint32_t s, const std::string& title, bool fpsCounter=false, bool sync=true, int major=1, int minor=1);
 		~GLEnv();
 		void setKeyCallback(GLFWkeyfun f);
 		

@@ -10,6 +10,7 @@
 #include "GLProgram.h"
 #include "GLBuffer.h"
 #include "GLTexture2D.h"
+#include "ParticleSystem.h"
 
 #include "Mat4.h"
 #include "Tesselation.h"
@@ -21,84 +22,203 @@ static void keyCallback(GLFWwindow* window, int key, int scancode, int action, i
 } 
 
 int main(int agrc, char ** argv) {
-    GLEnv gl{640,480,4,"Interactive Late Night Coding Teil 5"};
-    
+    GLEnv gl{640,480,4,"Interactive Late Night Coding Teil 5"};    
     gl.setKeyCallback(keyCallback);
 
-    Tesselation sphere{Tesselation::genSphere({0,0,0}, 0.7f, 100, 100)};
-
-    GLBuffer vbPos{GL_ARRAY_BUFFER};
-    vbPos.setData(sphere.getVertices(),3);
-
-    GLBuffer vbNorm{GL_ARRAY_BUFFER};
-    vbNorm.setData(sphere.getNormals(),3);
-
-    GLBuffer vbTan{GL_ARRAY_BUFFER};
-    vbTan.setData(sphere.getTangents(),3);
-
-    GLBuffer vbTc{GL_ARRAY_BUFFER};
-    vbTc.setData(sphere.getTexCoords(),2);
-
-    GLBuffer ib{GL_ELEMENT_ARRAY_BUFFER};
-    ib.setData(sphere.getIndices());
+    // generate ball resources and load textures
+    Tesselation sphere{Tesselation::genSphere({0,0,0}, 0.7f, 50, 50)};
+    GLBuffer vbBallPos{GL_ARRAY_BUFFER};
+    vbBallPos.setData(sphere.getVertices(),3);
+    GLBuffer vbBallNorm{GL_ARRAY_BUFFER};
+    vbBallNorm.setData(sphere.getNormals(),3);
+    GLBuffer vbBallTan{GL_ARRAY_BUFFER};
+    vbBallTan.setData(sphere.getTangents(),3);
+    GLBuffer vbBallTc{GL_ARRAY_BUFFER};
+    vbBallTc.setData(sphere.getTexCoords(),2);
+    GLBuffer ibBall{GL_ELEMENT_ARRAY_BUFFER};
+    ibBall.setData(sphere.getIndices());
+    BMP::Image ballAlbedoImage{BMP::load("ballAlbedo.bmp")};
+    GLTexture2D ballAlbedo{ballAlbedoImage.width, ballAlbedoImage.height, ballAlbedoImage.componentCount, GL_LINEAR, GL_LINEAR};
+    ballAlbedo.setData(ballAlbedoImage.data);
+    BMP::Image ballNormalImage{BMP::load("ballNormal.bmp")};
+    GLTexture2D ballNormalMap{ballNormalImage.width, ballNormalImage.height, ballNormalImage.componentCount, GL_LINEAR, GL_LINEAR};
+    ballNormalMap.setData(ballNormalImage.data);
     
-    BMP::Image image{BMP::load("albedo.bmp")};
-    GLTexture2D lena{image.width, image.height, image.componentCount, GL_LINEAR, GL_LINEAR};
-    lena.setData(image.data);
+    // generate wall geoemtry (for all 5 walls)
+    Tesselation square{Tesselation::genRectangle({0,0,0},4,4)};
+    GLBuffer vbWallPos{GL_ARRAY_BUFFER};
+    vbWallPos.setData(square.getVertices(),3);
+    GLBuffer vbWallNorm{GL_ARRAY_BUFFER};
+    vbWallNorm.setData(square.getNormals(),3);
+    GLBuffer vbWallTan{GL_ARRAY_BUFFER};
+    vbWallTan.setData(square.getTangents(),3);
+    GLBuffer vbWallTc{GL_ARRAY_BUFFER};
+    vbWallTc.setData(square.getTexCoords(),2);
+    GLBuffer ibWall{GL_ELEMENT_ARRAY_BUFFER};
+    ibWall.setData(square.getIndices());
+    
+    // load brick wall textures (sides
+    BMP::Image brickWallAlbedoImage{BMP::load("brickWallAlbedo.bmp")};
+    GLTexture2D brickWallAlbedo{brickWallAlbedoImage.width, brickWallAlbedoImage.height, brickWallAlbedoImage.componentCount, GL_LINEAR, GL_LINEAR};
+    brickWallAlbedo.setData(brickWallAlbedoImage.data);
+    BMP::Image brickWallNormalImage{BMP::load("brickWallNormal.bmp")};
+    GLTexture2D brickWallNormalMap{brickWallNormalImage.width, brickWallNormalImage.height, brickWallNormalImage.componentCount, GL_LINEAR, GL_LINEAR};
+    brickWallNormalMap.setData(brickWallNormalImage.data);
 
-    BMP::Image normals{BMP::load("normal.bmp")};
-    GLTexture2D normalMap{normals.width, normals.height, normals.componentCount, GL_LINEAR, GL_LINEAR};
-    normalMap.setData(normals.data);
+    // load brick wall textures (floor)
+    BMP::Image floorAlbedoImage{BMP::load("floorAlbedo.bmp")};
+    GLTexture2D floorAlbedo{floorAlbedoImage.width, floorAlbedoImage.height, floorAlbedoImage.componentCount, GL_LINEAR, GL_LINEAR};
+    floorAlbedo.setData(floorAlbedoImage.data);
+    BMP::Image floorNormalImage{BMP::load("floorNormal.bmp")};
+    GLTexture2D floorNormalMap{floorNormalImage.width, floorNormalImage.height, floorNormalImage.componentCount, GL_LINEAR, GL_LINEAR};
+    floorNormalMap.setData(floorNormalImage.data);
+
+    // load brick wall textures (ceiling)
+    BMP::Image ceilingAlbedoImage{BMP::load("ceilingAlbedo.bmp")};
+    GLTexture2D ceilingAlbedo{ceilingAlbedoImage.width, ceilingAlbedoImage.height, ceilingAlbedoImage.componentCount, GL_LINEAR, GL_LINEAR};
+    ceilingAlbedo.setData(ceilingAlbedoImage.data);
+    BMP::Image ceilingNormalImage{BMP::load("ceilingNormal.bmp")};
+    GLTexture2D ceilingNormalMap{ceilingNormalImage.width, ceilingNormalImage.height, ceilingNormalImage.componentCount, GL_LINEAR, GL_LINEAR};
+    ceilingNormalMap.setData(ceilingNormalImage.data);
     
-    const GLProgram prog = GLProgram::createFromFiles("vertex.glsl", "fragment.glsl");
-    const GLint mvpLocation = prog.getUniformLocation("MVP");
-    const GLint mLocation = prog.getUniformLocation("M");
-    const GLint mitLocation = prog.getUniformLocation("Mit");
-    const GLint invVLocation = prog.getUniformLocation("invV");
-    const GLint posLocation = prog.getAttributeLocation("vPos");
-    const GLint tanLocation = prog.getAttributeLocation("vTan");
-    const GLint tcLocation = prog.getAttributeLocation("vTc");
-    const GLint normLocation = prog.getAttributeLocation("vNorm");
-    const GLint lpLocation  = prog.getUniformLocation("vLightPos");
-    const GLint texLocation  = prog.getUniformLocation("textureSampler"); 
-    const GLint normMapLocation  = prog.getUniformLocation("normalSampler");  
-    
-    vbPos.connectVertexAttrib(posLocation, 3);
-    vbNorm.connectVertexAttrib(normLocation, 3);
-    vbTan.connectVertexAttrib(tanLocation, 3);
-    vbTc.connectVertexAttrib(tcLocation, 2);
-    
+    // setup normal mapping shader
+    const GLProgram progNormalMap = GLProgram::createFromFile("normalMapVertex.glsl", "normalMapFragment.glsl");
+    const GLint mvpLocationNormalMap = progNormalMap.getUniformLocation("MVP");
+    const GLint mLocationNormalMap = progNormalMap.getUniformLocation("M");
+    const GLint mitLocationNormalMap = progNormalMap.getUniformLocation("Mit");
+    const GLint invVLocationNormalMap = progNormalMap.getUniformLocation("invV");
+    const GLint posLocationNormalMap = progNormalMap.getAttributeLocation("vPos");
+    const GLint tanLocationNormalMap = progNormalMap.getAttributeLocation("vTan");
+    const GLint tcLocationNormalMap = progNormalMap.getAttributeLocation("vTc");
+    const GLint normLocationNormalMap = progNormalMap.getAttributeLocation("vNorm");
+    const GLint lpLocationNormalMap  = progNormalMap.getUniformLocation("vLightPos");
+    const GLint texRescaleLocationNormalMap = progNormalMap.getUniformLocation("texRescale");
+    const GLint texLocationNormalMap  = progNormalMap.getUniformLocation("textureSampler"); 
+    const GLint normMapLocationNormalMap  = progNormalMap.getUniformLocation("normalSampler");  
    
+    // setup basic OpenGL states that do not change during the frame
     glEnable(GL_CULL_FACE);
-    glCullFace(GL_BACK);
-    
+    glCullFace(GL_BACK);    
     glEnable(GL_DEPTH_TEST);
-    glDepthFunc(GL_LESS);
-    
+    glDepthFunc(GL_LESS);    
     glClearDepth(1.0f);
     glClearColor(0.5f, 0.5f, 1.0f, 1.0f);
-    do {  
-        const Dimensions dim{gl.getFramebufferSize()};
     
+    const Vec3 lookFromVec{0,0,5};
+    const Vec3 lookAtVec{0,0,0};
+    const Vec3 upVec{0,1,0};
+    const Mat4 v{Mat4::lookAt(lookFromVec,lookAtVec,upVec)};
+    
+    ParticleSystem particles{1000, Vec3{0,0,0}, 0.1f, Vec3{0,-0.01,0}, Vec3{-1.9f,-1.9f,-1.9f}, Vec3{1.9,1.9,1.9}, 200};
+    
+    do {
+        // setup viewport and clear buffers
+        const Dimensions dim{gl.getFramebufferSize()};    
         glViewport(0, 0, dim.width, dim.height);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    
-        prog.enable();
-        prog.setUniform(lpLocation, {0,0,2});
-        prog.setTexture(normMapLocation,normalMap,0);
-        prog.setTexture(texLocation,lena,1);
+        const Mat4 p{Mat4::perspective(45, dim.aspect(), 0.0001, 100)};
 
-        const Mat4 m{Mat4::translation({0.0f,0.0f,0.2f})*Mat4::rotationX(glfwGetTime()*57)*Mat4::translation({0.2f,0.0f,0.0f})*Mat4::rotationY(glfwGetTime()*17)};
-        const Mat4 v{Mat4::lookAt({0,0,2},{0,0,0},{0,1,0})};
-        const Mat4 p{Mat4::perspective(90, dim.aspect(), 0.0001, 100)};
-        const Mat4 mvp{m*v*p};    
-        prog.setUniform(mvpLocation, mvp);
-        prog.setUniform(mLocation, m);
-        prog.setUniform(mitLocation, Mat4::inverse(m), true);
-        prog.setUniform(invVLocation, Mat4::inverse(v));
+        // animate lightpos
+        progNormalMap.enable();
+
+        Vec3 lightPos{Mat4::rotationY(glfwGetTime()*55)*Vec3{0,0,1}};
+        progNormalMap.setUniform(lpLocationNormalMap, lightPos);
+
+        // ************* the ball
+        
+        // setup texures
+        progNormalMap.setTexture(normMapLocationNormalMap,ballNormalMap,0);
+        progNormalMap.setTexture(texLocationNormalMap,ballAlbedo,1);
+
+        // bind geometry
+        vbBallPos.connectVertexAttrib(posLocationNormalMap, 3);
+        vbBallNorm.connectVertexAttrib(normLocationNormalMap, 3);
+        vbBallTan.connectVertexAttrib(tanLocationNormalMap, 3);
+        vbBallTc.connectVertexAttrib(tcLocationNormalMap, 2);
+        ibBall.bind();
+        
+        // setup transformations
+        const Mat4 mBall{Mat4::translation({0.0f,0.0f,0.5f})*Mat4::rotationX(glfwGetTime()*57)*Mat4::translation({0.5f,0.0f,0.0f})*Mat4::rotationY(glfwGetTime()*17)};
+        progNormalMap.setUniform(texRescaleLocationNormalMap, 1.0f);
+        progNormalMap.setUniform(mvpLocationNormalMap, {mBall*v*p});
+        progNormalMap.setUniform(mLocationNormalMap, mBall);
+        progNormalMap.setUniform(mitLocationNormalMap, Mat4::inverse(mBall), true);
+        progNormalMap.setUniform(invVLocationNormalMap, Mat4::inverse(v));
                 
-
+        // render geometry
         glDrawElements(GL_TRIANGLES, sphere.getIndices().size(), GL_UNSIGNED_INT, (void*)0);
+        
+        
+        // ************* the left wall
+        
+        // setup texures (shader is already active)
+        progNormalMap.setTexture(normMapLocationNormalMap,brickWallNormalMap,0);
+        progNormalMap.setTexture(texLocationNormalMap,brickWallAlbedo,1);
+
+        // bind geometry
+        vbWallPos.connectVertexAttrib(posLocationNormalMap, 3);
+        vbWallNorm.connectVertexAttrib(normLocationNormalMap, 3);
+        vbWallTan.connectVertexAttrib(tanLocationNormalMap, 3);
+        vbWallTc.connectVertexAttrib(tcLocationNormalMap, 2);
+        ibWall.bind();
+
+        const Mat4 mLeftWall{Mat4::rotationY(90)*Mat4::translation(-2.0f,0.0f,0.0f)};
+        progNormalMap.setUniform(mvpLocationNormalMap, {mLeftWall*v*p});
+        progNormalMap.setUniform(mLocationNormalMap, mLeftWall);
+        progNormalMap.setUniform(mitLocationNormalMap, Mat4::inverse(mLeftWall), true);
+
+        // render geometry
+        glDrawElements(GL_TRIANGLES, square.getIndices().size(), GL_UNSIGNED_INT, (void*)0);
+
+        // ************* the right wall
+        
+        const Mat4 mRightWall{Mat4::rotationY(-90)*Mat4::translation(2.0f,0.0f,0.0f)};
+        progNormalMap.setUniform(mvpLocationNormalMap, {mRightWall*v*p});
+        progNormalMap.setUniform(mLocationNormalMap, mRightWall);
+        progNormalMap.setUniform(mitLocationNormalMap, Mat4::inverse(mRightWall), true);
+
+        // render geometry
+        glDrawElements(GL_TRIANGLES, square.getIndices().size(), GL_UNSIGNED_INT, (void*)0);
+
+        // ************* the top wall
+        
+        const Mat4 mTopWall{Mat4::rotationX(90)*Mat4::translation(0.0f,2.0f,0.0f)};
+        progNormalMap.setUniform(mvpLocationNormalMap, {mTopWall*v*p});
+        progNormalMap.setUniform(mLocationNormalMap, mTopWall);
+        progNormalMap.setUniform(mitLocationNormalMap, Mat4::inverse(mTopWall), true);
+
+        progNormalMap.setTexture(normMapLocationNormalMap,ceilingNormalMap,0);
+        progNormalMap.setTexture(texLocationNormalMap,ceilingAlbedo,1);
+
+        // render geometry
+        glDrawElements(GL_TRIANGLES, square.getIndices().size(), GL_UNSIGNED_INT, (void*)0);
+
+        // ************* the bottom wall
+        
+        const Mat4 mBottomWall{Mat4::rotationX(-90)*Mat4::translation(0.0f,-2.0f,0.0f)};
+        progNormalMap.setUniform(mvpLocationNormalMap, {mBottomWall*v*p});
+        progNormalMap.setUniform(mLocationNormalMap, mBottomWall);
+        progNormalMap.setUniform(mitLocationNormalMap, Mat4::inverse(mBottomWall), true);
+        
+        progNormalMap.setTexture(normMapLocationNormalMap,floorNormalMap,0);
+        progNormalMap.setTexture(texLocationNormalMap,floorAlbedo,1);
+
+        // render geometry
+        glDrawElements(GL_TRIANGLES, square.getIndices().size(), GL_UNSIGNED_INT, (void*)0);
+
+        // ************* the back wall
+        
+        const Mat4 mBackWall{Mat4::translation(0.0f,0.0f,-2.0f)};
+        progNormalMap.setUniform(mvpLocationNormalMap, {mBackWall*v*p});
+        progNormalMap.setUniform(mLocationNormalMap, mBackWall);
+        progNormalMap.setUniform(mitLocationNormalMap, Mat4::inverse(mBackWall), true);
+
+        // render geometry
+        glDrawElements(GL_TRIANGLES, square.getIndices().size(), GL_UNSIGNED_INT, (void*)0);
+
+        // ************* particles
+        particles.render(v,p);
+        particles.update();
 
         gl.endOfFrame();
     } while (!gl.shouldClose());  

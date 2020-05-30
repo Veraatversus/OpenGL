@@ -20,6 +20,10 @@
     <None Include="Shader\fragmentShader.glsl" />
     <None Include="Shader\fragment.glsl" />
     <None Include="Shader\vertex.glsl" />
+    <None Include="Shader\normalMapFragment.glsl" />
+    <None Include="Shader\normalMapVertex.glsl" />
+    <None Include="Shader\pointFragment.glsl" />
+    <None Include="Shader\pointVertex.glsl" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="GLBuffer.cpp">
@@ -47,6 +51,9 @@
       <Filter>Quelldateien</Filter>
     </ClCompile>
     <ClCompile Include="Vec3.cpp">
+      <Filter>Quelldateien</Filter>
+    </ClCompile>
+    <ClCompile Include="ParticleSystem.cpp">
       <Filter>Quelldateien</Filter>
     </ClCompile>
   </ItemGroup>
@@ -78,12 +85,39 @@
     <ClInclude Include="bmp.h">
       <Filter>Headerdateien</Filter>
     </ClInclude>
+    <ClInclude Include="ParticleSystem.h">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Image Include="Pics\albedo.bmp">
       <Filter>Ressourcendateien</Filter>
     </Image>
     <Image Include="Pics\normal.bmp">
+      <Filter>Ressourcendateien</Filter>
+    </Image>
+    <Image Include="Pics\ballAlbedo.bmp">
+      <Filter>Ressourcendateien</Filter>
+    </Image>
+    <Image Include="Pics\ballNormal.bmp">
+      <Filter>Ressourcendateien</Filter>
+    </Image>
+    <Image Include="Pics\brickWallAlbedo.bmp">
+      <Filter>Ressourcendateien</Filter>
+    </Image>
+    <Image Include="Pics\brickWallNormal.bmp">
+      <Filter>Ressourcendateien</Filter>
+    </Image>
+    <Image Include="Pics\ceilingAlbedo.bmp">
+      <Filter>Ressourcendateien</Filter>
+    </Image>
+    <Image Include="Pics\ceilingNormal.bmp">
+      <Filter>Ressourcendateien</Filter>
+    </Image>
+    <Image Include="Pics\floorAlbedo.bmp">
+      <Filter>Ressourcendateien</Filter>
+    </Image>
+    <Image Include="Pics\floorNormal.bmp">
       <Filter>Ressourcendateien</Filter>
     </Image>
   </ItemGroup>

@@ -28,8 +28,8 @@ public:
 	static GLProgram createFromFiles(const std::vector<std::string>& vs, const std::vector<std::string>& fs);
 	static GLProgram createFromStrings(const std::vector<std::string>& vs, const std::vector<std::string>& fs);
 
-	static GLProgram createFromFiles(const std::string& vs, const std::string& fs);
-	static GLProgram createFromStrings(const std::string& vs, const std::string& fs);
+	static GLProgram createFromFile(const std::string& vs, const std::string& fs);
+	static GLProgram createFromString(const std::string& vs, const std::string& fs);
 	
 	GLint getAttributeLocation(const std::string& id) const;
 	GLint getUniformLocation(const std::string& id) const;

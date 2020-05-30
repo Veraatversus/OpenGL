@@ -83,7 +83,6 @@ namespace OpenGL {
         program.SetTexture(texLocation, lena, 1);
 
 
-
         var m = Mat4.Translation(new Vec3(0.0f, 0.0f, 0.2f)) * Mat4.RotationX(Convert.ToSingle(GetTime() * 57)) * Mat4.Translation(new Vec3(0.2f, 0.0f, 0.0f)) * Mat4.RotationY(Convert.ToSingle(GetTime() * 17));
         var v = Mat4.LookAt(new Vec3(0, 0, 2), new Vec3(0, 0, 0), new Vec3(0, 1, 0));
         var p = Mat4.Perspective(90, dimensions.Aspect, 0.0001f, 100);

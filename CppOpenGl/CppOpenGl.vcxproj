@@ -22,6 +22,10 @@
     <None Include="Shader\fragment.glsl" />
     <None Include="Shader\fragmentShader.glsl" />
     <None Include="makefile" />
+    <None Include="Shader\normalMapFragment.glsl" />
+    <None Include="Shader\normalMapVertex.glsl" />
+    <None Include="Shader\pointFragment.glsl" />
+    <None Include="Shader\pointVertex.glsl" />
     <None Include="Shader\vertex.glsl" />
     <None Include="Shader\vertexShader.glsl" />
   </ItemGroup>
@@ -32,6 +36,7 @@
     <ClCompile Include="GLTexture2D.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Mat4.cpp" />
+    <ClCompile Include="ParticleSystem.cpp" />
     <ClCompile Include="Rand.cpp" />
     <ClCompile Include="Tesselation.cpp" />
     <ClCompile Include="Vec3.cpp" />
@@ -43,12 +48,21 @@
     <ClInclude Include="GLProgram.h" />
     <ClInclude Include="GLTexture2D.h" />
     <ClInclude Include="Mat4.h" />
+    <ClInclude Include="ParticleSystem.h" />
     <ClInclude Include="Rand.h" />
     <ClInclude Include="Tesselation.h" />
     <ClInclude Include="Vec3.h" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="Pics\albedo.bmp" />
+    <Image Include="Pics\ballAlbedo.bmp" />
+    <Image Include="Pics\ballNormal.bmp" />
+    <Image Include="Pics\brickWallAlbedo.bmp" />
+    <Image Include="Pics\brickWallNormal.bmp" />
+    <Image Include="Pics\ceilingAlbedo.bmp" />
+    <Image Include="Pics\ceilingNormal.bmp" />
+    <Image Include="Pics\floorAlbedo.bmp" />
+    <Image Include="Pics\floorNormal.bmp" />
     <Image Include="Pics\normal.bmp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
