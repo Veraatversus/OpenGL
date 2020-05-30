@@ -19,8 +19,10 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <None Include="Shader\fragment.glsl" />
     <None Include="Shader\fragmentShader.glsl" />
     <None Include="makefile" />
+    <None Include="Shader\vertex.glsl" />
     <None Include="Shader\vertexShader.glsl" />
   </ItemGroup>
   <ItemGroup>
@@ -44,6 +46,10 @@
     <ClInclude Include="Rand.h" />
     <ClInclude Include="Tesselation.h" />
     <ClInclude Include="Vec3.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="Pics\albedo.bmp" />
+    <Image Include="Pics\normal.bmp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>

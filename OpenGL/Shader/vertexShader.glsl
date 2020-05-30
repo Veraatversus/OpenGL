@@ -1,4 +1,4 @@
-﻿#version 110
+#version 110
 
 uniform mat4 MVP;
 uniform mat4 Mit;
@@ -13,8 +13,8 @@ varying vec3 pos;
 varying vec2 tc;
 
 void main() {
-	gl_Position = MVP * vec4(vPos, 1.0);
-	pos = (M * vec4(vPos, 1.0)).xyz;
-	normal = (Mit * vec4(vNormal, 0.0)).xyz;
-	tc = vTc;
+  gl_Position = MVP * vec4(vPos,1.0);
+  pos = (M * vec4(vPos,1.0)).xyz;
+  normal = (Mit * vec4(vNormal,0.0)).xyz;
+  tc = vTc;
 }

@@ -18,6 +18,8 @@
     <None Include="makefile" />
     <None Include="Shader\vertexShader.glsl" />
     <None Include="Shader\fragmentShader.glsl" />
+    <None Include="Shader\fragment.glsl" />
+    <None Include="Shader\vertex.glsl" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="GLBuffer.cpp">
@@ -76,5 +78,13 @@
     <ClInclude Include="bmp.h">
       <Filter>Headerdateien</Filter>
     </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="Pics\albedo.bmp">
+      <Filter>Ressourcendateien</Filter>
+    </Image>
+    <Image Include="Pics\normal.bmp">
+      <Filter>Ressourcendateien</Filter>
+    </Image>
   </ItemGroup>
 </Project>
