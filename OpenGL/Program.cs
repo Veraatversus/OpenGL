@@ -12,19 +12,25 @@ namespace OpenGL {
     private static GlfwWindowPtr window;
 
     private static int Main(string[] args) {
-      var gl = new GLEnv(640, 480, "Interactive Late Night Coding");
+      using var gl = new GLEnv(640, 480, "Interactive Late Night Coding");
 
-      //var sphere = new GLBuffer(BufferTarget.ArrayBuffer).SetData(new[] { });
       var sphere = Tesselation.GenSphere(new Vec3(0, 0, 0), 1, 100, 100);
 
-      var vbPos = new GLBuffer(BufferTarget.ArrayBuffer)
+      using var vbPos = new GLBuffer(BufferTarget.ArrayBuffer)
         .SetData(sphere.Vertices, 3);
 
-      var vbNormal = new GLBuffer(BufferTarget.ArrayBuffer)
+      using var vbNormal = new GLBuffer(BufferTarget.ArrayBuffer)
         .SetData(sphere.Normals, 3);
 
-      var ib = new GLBuffer(BufferTarget.ElementArrayBuffer)
+      using var vbTexCoords = new GLBuffer(BufferTarget.ArrayBuffer)
+        .SetData(sphere.TexCoords, 2);
+
+      using var ib = new GLBuffer(BufferTarget.ElementArrayBuffer)
         .SetData(sphere.Indices);
+
+      using var checkTex = new GLTexture2D(2, 2);
+      checkTex.SetData(new byte[]{255, 0, 0, 255,     0, 0, 0, 255,
+                                    0, 0, 0, 255,   255, 0, 0, 255});
 
       var program = GLProgram.CreateFromFile("Shader/vertexShader.glsl", "Shader/fragmentShader.glsl");
 
@@ -33,12 +39,16 @@ namespace OpenGL {
       var mLocation = program.GetUniformLocation("M");
 
       var lightPosLocation = program.GetUniformLocation("lightPos");
+      
       var posLocation = program.GetAttribLocation("vPos");
       var normLocation = program.GetAttribLocation("vNormal");
+      var texLocation = program.GetAttribLocation("vTc");
       GLProgram.CheckAndThrow();
 
       vbPos.ConnectVertexAttrib(posLocation, 3);
       vbNormal.ConnectVertexAttrib(normLocation, 3);
+      vbTexCoords.ConnectVertexAttrib(texLocation, 2);
+      GLProgram.CheckAndThrow();
 
       GL.Enable(EnableCap.DepthTest);
       GL.DepthFunc(DepthFunction.Less);
@@ -47,7 +57,7 @@ namespace OpenGL {
 
       GL.Enable(EnableCap.CullFace);
       GL.CullFace(CullFaceMode.Back);
-
+      GLProgram.CheckAndThrow();
 
       do {
 
@@ -59,27 +69,29 @@ namespace OpenGL {
 
 
         var p = Mat4.Perspective(90, dimensions.Aspect, 0.0001f, 1000.0f);
-        var m = Mat4.RotationY(Convert.ToSingle(GetTime() * 33)) * Mat4.RotationZ(Convert.ToSingle(GetTime() * 20));
+        //var m = Mat4.RotationY(Convert.ToSingle(GetTime() * 33)) * Mat4.RotationZ(Convert.ToSingle(GetTime() * 20));
+        var  m =  Mat4.Translation(new Vec3(0.0f,0.0f,0.2f))
+                * Mat4.RotationX(Convert.ToSingle(GetTime() * 57))
+                * Mat4.Translation(new Vec3(0.2f,0.0f,0.0f))
+                * Mat4.RotationY(Convert.ToSingle(GetTime() * 177));
         var v = Mat4.LookAt(new Vec3(0, 0, 2), new Vec3(0, 0, 0), new Vec3(0, 1, 0));
         var mvp = m * v * p;
 
         program.Enable();
-
         program.SetUniform(mvpLocation, mvp);
         program.SetUniform(mitLocation, Mat4.Inverse(m), true);
         program.SetUniform(mLocation, m);
         program.SetUniform(lightPosLocation, new Vec3(0, 2, 2));
+        //GLProgram.CheckAndThrow();
+        program.SetTexture(texLocation, checkTex, 0);
+        //GLProgram.CheckAndThrow();
 
         GL.DrawElements(BeginMode.Triangles, sphere.Indices.Length, DrawElementsType.UnsignedInt, 0);
-        GL.DrawArrays(BeginMode.Triangles, 0, 3);
+        //GL.DrawArrays(BeginMode.Triangles, 0, 3);
 
         gl.EndOfFrame();
       } while (!gl.ShouldClose());
 
-      gl.Dispose();
-      vbPos.Dispose();
-      vbNormal.Dispose();
-      ib.Dispose();
       return 0;
     }
 

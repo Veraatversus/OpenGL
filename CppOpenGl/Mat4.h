@@ -21,8 +21,10 @@ public:
     os << m.toString() ; return os;
   }
 
+
   operator float*(void) {return e.data();}
   operator const float*(void) const  {return e.data();}
+
 
   Mat4 operator * ( float scalar ) const;
   Mat4 operator + ( float scalar ) const;
@@ -46,7 +48,6 @@ public:
   static Mat4 perspective(float fovy, float aspect, float znear, float zfar);
   static Mat4 ortho(float left, float right, float bottom, float top, float znear, float zfar );
   static Mat4 lookAt(const Vec3& vEye, const Vec3& vAt, const Vec3& vUp);
-  
   
 private:
   std::array<float, 16> e;

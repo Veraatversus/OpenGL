@@ -15,6 +15,11 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
+    <None Include="makefile" />
+    <None Include="Shader\vertexShader.glsl" />
+    <None Include="Shader\fragmentShader.glsl" />
+  </ItemGroup>
+  <ItemGroup>
     <ClCompile Include="GLBuffer.cpp">
       <Filter>Quelldateien</Filter>
     </ClCompile>
@@ -22,6 +27,9 @@
       <Filter>Quelldateien</Filter>
     </ClCompile>
     <ClCompile Include="GLProgram.cpp">
+      <Filter>Quelldateien</Filter>
+    </ClCompile>
+    <ClCompile Include="GLTexture2D.cpp">
       <Filter>Quelldateien</Filter>
     </ClCompile>
     <ClCompile Include="main.cpp">
@@ -50,6 +58,9 @@
     <ClInclude Include="GLProgram.h">
       <Filter>Headerdateien</Filter>
     </ClInclude>
+    <ClInclude Include="GLTexture2D.h">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
     <ClInclude Include="Mat4.h">
       <Filter>Headerdateien</Filter>
     </ClInclude>
@@ -62,8 +73,8 @@
     <ClInclude Include="Vec3.h">
       <Filter>Headerdateien</Filter>
     </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="makefile" />
+    <ClInclude Include="bmp.h">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

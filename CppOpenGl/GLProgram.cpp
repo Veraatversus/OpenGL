@@ -1,13 +1,13 @@
 #include <fstream>
 #include <sstream>
+#include <iostream>
 
 #include "GLProgram.h"
-
 
 GLProgram::GLProgram(const GLchar** vertexShaderTexts, GLsizei vsCount, const GLchar** framentShaderTexts, GLsizei fsCount) :
 	glVertexShader(0),
 	glFragmentShader(0),
-	glProgram(0)	
+	glProgram(0)
 {
 	glVertexShader = glCreateShader(GL_VERTEX_SHADER); checkAndThrow();
 	glShaderSource(glVertexShader, vsCount, vertexShaderTexts, NULL); checkAndThrow();
@@ -23,27 +23,22 @@ GLProgram::GLProgram(const GLchar** vertexShaderTexts, GLsizei vsCount, const GL
 	glLinkProgram(glProgram); checkAndThrowProgram(glProgram);
 }
 
-
-GLProgram GLProgram::createFromFile(const std::string& vs, const std::string& fs) {
-	return createFromFiles(std::vector<std::string>{vs},std::vector<std::string>{fs});
-}
-
-GLProgram GLProgram::createFromString(const std::string& vs, const std::string& fs) {
-	return createFromStrings(std::vector<std::string>{vs},std::vector<std::string>{fs});
+GLProgram::~GLProgram() {
+	glDeleteShader(glVertexShader);
+	glDeleteShader(glFragmentShader);
+	glDeleteProgram(glProgram);
 }
 
 GLProgram GLProgram::createFromFiles(const std::vector<std::string>& vs, const std::vector<std::string>& fs) {
-	std::vector<std::string> vsText{};
-	std::vector<std::string> fsText{};
-	
-	for (std::string s : vs) {
-		vsText.push_back(loadFile(s));
+	std::vector<std::string> vsTexts;
+	for (const std::string f : vs) {
+		vsTexts.push_back(loadFile(f));
 	}
-	for (std::string s : fs) {
-		fsText.push_back(loadFile(s));
+	std::vector<std::string> fsTexts;
+	for (const std::string f : fs) {
+		fsTexts.push_back(loadFile(f));
 	}
-
-	return createFromStrings(vsText,fsText);
+	return createFromStrings(vsTexts,fsTexts);
 }
 
 GLProgram GLProgram::createFromStrings(const std::vector<std::string>& vs, const std::vector<std::string>& fs) {
@@ -60,38 +55,49 @@ GLProgram GLProgram::createFromStrings(const std::vector<std::string>& vs, const
 	return {vertexShaderTexts.data(), GLsizei(vs.size()), framentShaderTexts.data(), GLsizei(fs.size())};
 }
 
+GLProgram GLProgram::createFromFiles(const std::string& vs, const std::string& fs) {
+	return createFromFiles(std::vector<std::string>{vs}, std::vector<std::string>{fs});
+}
+
+GLProgram GLProgram::createFromStrings(const std::string& vs, const std::string& fs) {
+	return createFromStrings(std::vector<std::string>{vs}, std::vector<std::string>{fs});
+}
+
 std::string GLProgram::loadFile(const std::string& filename) {
-	std::ifstream shaderFile(filename);
+	std::ifstream shaderFile{filename};
 	if (!shaderFile) {
-		throw ProgramException(std::string("Unable to open file ") + filename);
+		throw ProgramException{std::string("Unable to open file ") +  filename};
 	}
-	std::string str{};
-	std::string all{};
-	while (std::getline(shaderFile,str)) {
-		all += str + "\n";
-	}
-	return all;
+	std::string str;
+	std::string fileContents;
+	while (std::getline(shaderFile, str)) {
+		fileContents += str + "\n";
+	} 
+	return fileContents;
 }
 
-void GLProgram::checkAndThrow() {
-	GLenum e = glGetError();
-	if (e != GL_NO_ERROR) {
-		std::stringstream s;
-		s << "An openGL error occured:" << e;
-		throw ProgramException{s.str()};
-	}
+GLint GLProgram::getAttributeLocation(const std::string& id) const {
+	GLint l = glGetAttribLocation(glProgram, id.c_str());
+	checkAndThrow();	
+	if(l == -1)
+		throw ProgramException{std::string("Can't find attribute ") +  id};	
+	return l;
 }
 
-GLint GLProgram::getUniformLocation(const std::string& name) const {
-	return glGetUniformLocation(glProgram,name.c_str());
-}
-
-GLint GLProgram::getAttribLocation(const std::string& name) const {
-	return glGetAttribLocation(glProgram,name.c_str());
+GLint GLProgram::getUniformLocation(const std::string& id) const {
+	GLint l = glGetUniformLocation(glProgram, id.c_str());
+	checkAndThrow();
+	if(l == -1)
+		throw ProgramException{std::string("Can't find uniform ") +  id};	
+	return l;
 }
 
 void GLProgram::enable() const {
-	glUseProgram(glProgram);	
+	glUseProgram(glProgram);
+}
+
+void GLProgram::disable() const {
+	glUseProgram(0);
 }
 
 void GLProgram::setUniform(GLint id, float value) const {
@@ -104,6 +110,21 @@ void GLProgram::setUniform(GLint id, const Vec3& value) const {
 
 void GLProgram::setUniform(GLint id, const Mat4& value, bool transpose) const {
 	glUniformMatrix4fv(id, 1, transpose, value);
+}
+
+void GLProgram::setTexture(GLint id, const GLTexture2D& texture, GLuint unit) const {
+	glActiveTexture(GL_TEXTURE0 + unit);
+	glBindTexture(GL_TEXTURE_2D, texture.getId());
+	glUniform1i(id, unit);
+}
+
+void GLProgram::checkAndThrow() {
+	GLenum e = glGetError();
+	if (e != GL_NO_ERROR) {
+		std::stringstream s;
+		s << "An openGL error occured:" << e;
+		throw ProgramException{s.str()};
+	}	
 }
 
 void GLProgram::checkAndThrowShader(GLuint shader) {

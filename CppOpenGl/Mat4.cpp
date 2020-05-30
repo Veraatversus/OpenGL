@@ -326,6 +326,7 @@ Mat4 Mat4::ortho(float left, float right, float bottom, float top, float znear, 
 			-(right+left)/(right-left), -(top+bottom)/(top-bottom), -(zfar+znear)/(zfar-znear), 1.0f};
 }
 
+
 Mat4 Mat4::lookAt(const Vec3& vEye, const Vec3& vAt, const Vec3& vUp) {
 
 	Vec3 f{vAt-vEye};

@@ -34,10 +34,10 @@ void GLBuffer::setData(const std::vector<GLuint>& data) {
 	glBufferData(target, elemSize*data.size(), data.data(), GL_STATIC_DRAW); 	
 }
 
-void GLBuffer::connectVertexAttrib(GLint location, size_t count, size_t offset) const {
+void GLBuffer::connectVertexAttrib(GLint location, size_t elemCount, size_t offset) const {
 	glBindBuffer(target, bufferID);
 	glEnableVertexAttribArray(location);
-	glVertexAttribPointer(location, count, type, GL_FALSE, stride, (void*)(offset*elemSize));
+	glVertexAttribPointer(location, elemCount, type, GL_FALSE, stride, (void*)(offset*elemSize));
 }
 
 void GLBuffer::bind() const {

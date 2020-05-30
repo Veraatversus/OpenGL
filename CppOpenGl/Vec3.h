@@ -13,9 +13,6 @@ class Vec3 {
 		friend std::ostream& operator<<(std::ostream &os, const Vec3& v) {os << v.toString() ; return os;}
 		const std::string toString() const;
 		
-		operator float*(void) {return e.data();}
-		operator const float*(void) const  {return e.data();}		
-		
 		float x() const;
 		float y() const;
 		float z() const;
@@ -34,6 +31,9 @@ class Vec3 {
 
 		float length() const;
 		float sqlength() const;
+		
+		operator float*(void) {return e.data();}
+		operator const float*(void) const  {return e.data();}
 			
 		static float dot(const Vec3& a, const Vec3& b);		
 		static Vec3 cross(const Vec3& a, const Vec3& b);
@@ -47,7 +47,7 @@ class Vec3 {
 		static Vec3 randomPointInSphere();
 		static Vec3 randomPointInDisc();
 		static Vec3 randomUnitVector();
-	
+			
 	private:
 		std::array<float, 3> e;
 		

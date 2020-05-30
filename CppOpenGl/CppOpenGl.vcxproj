@@ -19,9 +19,15 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <None Include="Shader\fragmentShader.glsl" />
+    <None Include="makefile" />
+    <None Include="Shader\vertexShader.glsl" />
+  </ItemGroup>
+  <ItemGroup>
     <ClCompile Include="GLBuffer.cpp" />
     <ClCompile Include="GLEnv.cpp" />
     <ClCompile Include="GLProgram.cpp" />
+    <ClCompile Include="GLTexture2D.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Mat4.cpp" />
     <ClCompile Include="Rand.cpp" />
@@ -29,16 +35,15 @@
     <ClCompile Include="Vec3.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="bmp.h" />
     <ClInclude Include="GLBuffer.h" />
     <ClInclude Include="GLEnv.h" />
     <ClInclude Include="GLProgram.h" />
+    <ClInclude Include="GLTexture2D.h" />
     <ClInclude Include="Mat4.h" />
     <ClInclude Include="Rand.h" />
     <ClInclude Include="Tesselation.h" />
     <ClInclude Include="Vec3.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="makefile" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>

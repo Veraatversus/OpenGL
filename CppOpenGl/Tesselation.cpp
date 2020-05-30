@@ -1,4 +1,5 @@
 #include <cmath>
+#include <iostream>
 
 constexpr float PI = 3.14159265358979323846f;
 
@@ -22,8 +23,8 @@ Tesselation Tesselation::genSphere(const Vec3& center, const float radius, const
 			const float sectorAngle{j * sectorStep};           // starting from 0 to 2pi
 
 			// vertex position (x, y, z)
-			float x = xy * cosf(sectorAngle);             // r * cos(u) * cos(v)
-			float y = xy * sinf(sectorAngle);             // r * cos(u) * sin(v)
+			const float x = xy * cosf(sectorAngle);             // r * cos(u) * cos(v)
+			const float y = xy * sinf(sectorAngle);             // r * cos(u) * sin(v)
 			tess.vertices.push_back(center.x() + x);
 			tess.vertices.push_back(center.y() + y);
 			tess.vertices.push_back(center.z() + z);
@@ -32,6 +33,21 @@ Tesselation Tesselation::genSphere(const Vec3& center, const float radius, const
 			tess.normals.push_back(x * lengthInv);
 			tess.normals.push_back(y * lengthInv);
 			tess.normals.push_back(z * lengthInv);
+
+			const float nextSectorAngle{(j+1) * sectorStep};
+			const float nx = xy * cosf(nextSectorAngle);
+			const float ny = xy * sinf(nextSectorAngle);
+			
+			// compute the tangent an make sure it is perpendicular to the normal
+			Vec3 n{x * lengthInv, y * lengthInv,z * lengthInv};
+			Vec3 t{Vec3::normalize(Vec3{nx,ny,z}-Vec3{x,y,z})};
+			Vec3 b{Vec3::cross(t,n)};
+			Vec3 tCorr{Vec3::cross(n,b)};
+					
+			// normalized vertex tangent (tx, ty, tz)
+			tess.tangents.push_back(tCorr.x());
+			tess.tangents.push_back(tCorr.y());
+			tess.tangents.push_back(tCorr.z());
 
 			// vertex tex coord (s, t) range between [0, 1]
 			tess.texCoords.push_back((float)j / sectorCount);

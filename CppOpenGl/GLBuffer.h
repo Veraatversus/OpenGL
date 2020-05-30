@@ -11,7 +11,7 @@ public:
 	~GLBuffer();
 	void setData(const std::vector<GLfloat>& data, size_t valuesPerElement);
 	void setData(const std::vector<GLuint>& data);
-	void connectVertexAttrib(GLint location, size_t count, size_t offset=0) const;
+	void connectVertexAttrib(GLint location, size_t elemCount, size_t offset=0) const;
 	void bind() const;
 	
 private:
