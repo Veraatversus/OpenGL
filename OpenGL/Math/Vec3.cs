@@ -3,6 +3,7 @@
   public class Vec3 {
 
     #region Public Properties
+
     public float[] E { get; set; } = new float[3];
     public float X { get => E[0]; set => E[0] = value; }
 

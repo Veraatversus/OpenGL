@@ -4,7 +4,7 @@ using static Pencil.Gaming.Glfw;
 
 namespace OpenGL {
 
-  public class GLEnv : IDisposable {
+  public sealed class GLEnv : IDisposable {
 
     #region Public Events
 
@@ -15,7 +15,7 @@ namespace OpenGL {
     #region Public Constructors
 
     public GLEnv(int width, int height, string titel, int samples = 4) {
-      SetErrorCallback(errorCallback);
+      SetErrorCallback(ErrorCallback);
       if (!Init()) {
         throw new GLException("Could not init Glfw.");
       }
@@ -29,7 +29,7 @@ namespace OpenGL {
       }
 
       MakeContextCurrent(window);
-      Glfw.SetKeyCallback(window, keyCallback);
+      Glfw.SetKeyCallback(window, KeyCallback);
     }
 
     #endregion Public Constructors
@@ -52,6 +52,7 @@ namespace OpenGL {
 
     public void Dispose() {
       Terminate();
+      GC.SuppressFinalize(this);
     }
 
     #endregion Public Methods
@@ -66,14 +67,14 @@ namespace OpenGL {
 
     #region Private Methods
 
-    private void keyCallback(GlfwWindowPtr wnd, Key key, int scanCode, KeyAction action, KeyModifiers mods) {
+    private void KeyCallback(GlfwWindowPtr wnd, Key key, int scanCode, KeyAction action, KeyModifiers mods) {
       if (key == Key.Escape && action == KeyAction.Press) {
         SetWindowShouldClose(window, true);
       }
       OnKeyPressed?.Invoke(key, scanCode, action, mods);
     }
 
-    private void errorCallback(GlfwError code, string desc) {
+    private void ErrorCallback(GlfwError code, string desc) {
       Console.WriteLine($"Fatal Error: {desc} ({code})");
     }
 

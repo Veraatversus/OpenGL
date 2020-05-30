@@ -12,13 +12,13 @@ namespace OpenGL {
     #region Public Constructors
 
     public GLProgram(string[] vertexShaders, string[] fragmentShaders) {
-      int nullTerminator = -1;
+      var nullTerminator = -1;
 
-      var glVertexShader = CAT(() => GL.CreateShader(ShaderType.VertexShader));
+      glVertexShader = CAT(() => GL.CreateShader(ShaderType.VertexShader));
       CAT(() => GL.ShaderSource(glVertexShader, vertexShaders.Length, vertexShaders, ref nullTerminator));
       CATS(glVertexShader, () => GL.CompileShader(glVertexShader));
 
-      var glFragmentShader = CAT(() => GL.CreateShader(ShaderType.FragmentShader));
+      glFragmentShader = CAT(() => GL.CreateShader(ShaderType.FragmentShader));
       CAT(() => GL.ShaderSource(glFragmentShader, fragmentShaders.Length, fragmentShaders, ref nullTerminator));
       CATS(glFragmentShader, () => GL.CompileShader(glFragmentShader));
 
@@ -169,9 +169,9 @@ namespace OpenGL {
 
     #region Private Fields
 
-    private uint glVertexShader;
-    private uint glFragmentShader;
-    private uint glProgram;
+    private readonly uint glVertexShader;
+    private readonly uint glFragmentShader;
+    private readonly uint glProgram;
 
     #endregion Private Fields
   }

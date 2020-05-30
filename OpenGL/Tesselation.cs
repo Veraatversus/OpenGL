@@ -1,7 +1,6 @@
 ﻿using MathR;
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 
 namespace OpenGL {
 
@@ -11,7 +10,8 @@ namespace OpenGL {
 
     public float[] Vertices { get; set; }
 
-    public float[] Normals { get; set; } 
+    public float[] Normals { get; set; }
+    public float[] Tangents { get; set; }
 
     public float[] TexCoords { get; set; }
 
@@ -22,9 +22,10 @@ namespace OpenGL {
     #region Public Methods
 
     public static Tesselation GenSphere(Vec3 center, float radius, uint sectorCount, uint stackCount) {
-      //var tess = new Tesselation();
+
       var vertices = new List<float>();
       var normals = new List<float>();
+      var tangents = new List<float>();
       var texCoords = new List<float>();
       var indices = new List<uint>();
 
@@ -33,7 +34,7 @@ namespace OpenGL {
       var stackStep = (float)Math.PI / stackCount;
 
       for (uint i = 0; i <= stackCount; ++i) {
-        var stackAngle = (float)Math.PI / 2.0f - i * stackStep;// starting from pi/2 to -pi/2
+        var stackAngle = ((float)Math.PI / 2.0f) - (i * stackStep);// starting from pi/2 to -pi/2
         var xy = radius * MathF.Cos(stackAngle);               // r * cos(u)
         var z = radius * MathF.Sin(stackAngle);                // r * sin(u)
 
@@ -53,6 +54,21 @@ namespace OpenGL {
           normals.Add(x * lengthInv);
           normals.Add(y * lengthInv);
           normals.Add(z * lengthInv);
+
+          var nextSectorAngle = (j + 1) * sectorStep;
+          var nx = xy * MathF.Cos(nextSectorAngle);
+          var ny = xy * MathF.Sin(nextSectorAngle);
+
+          // compute the tangent an make sure it is perpendicular to the normal
+          var n = new Vec3(x * lengthInv, y * lengthInv, z * lengthInv);
+          var t = new Vec3(nx, ny, z).Normalize() - new Vec3(x, y, z).Normalize();
+          var b = t.Cross(n);
+          var tCorr = n.Cross(b);
+
+          // normalized vertex tangent (tx, ty, tz)
+          tangents.Add(tCorr.X);
+          tangents.Add(tCorr.Y);
+          tangents.Add(tCorr.Z);
 
           // vertex tex coord (s, t) range between [0, 1]
           texCoords.Add((float)j / sectorCount);
@@ -82,7 +98,13 @@ namespace OpenGL {
         }
       }
 
-      return new Tesselation { Indices = indices.ToArray(), Normals = normals.ToArray(), TexCoords = texCoords.ToArray(), Vertices = vertices.ToArray() };
+      return new Tesselation {
+        Indices = indices.ToArray(),
+        Normals = normals.ToArray(),
+        TexCoords = texCoords.ToArray(),
+        Vertices = vertices.ToArray(),
+        Tangents = tangents.ToArray()
+      };
     }
 
     #endregion Public Methods

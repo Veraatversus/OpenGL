@@ -4,7 +4,7 @@ using System.Runtime.InteropServices;
 
 namespace OpenGL {
 
-  public class GLBuffer : IDisposable {
+  public sealed class GLBuffer : IDisposable {
 
     #region Public Constructors
 
@@ -24,6 +24,7 @@ namespace OpenGL {
     public void Dispose() {
       GL.BindBuffer(target, 0);
       GL.DeleteBuffer(bufferID);
+      GC.SuppressFinalize(this);
     }
 
     #endregion Public Methods
@@ -68,8 +69,8 @@ namespace OpenGL {
 
     #region Private Fields
 
-    private BufferTarget target;
-    private int bufferID;
+    private readonly BufferTarget target;
+    private readonly int bufferID;
     private int elemSize;
     private int stride;
     private VertexAttribPointerType type;

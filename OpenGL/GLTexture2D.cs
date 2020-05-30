@@ -3,19 +3,19 @@ using System;
 
 namespace OpenGL {
 
-  public class GLTexture2D : IDisposable {
+  public sealed class GLTexture2D : IDisposable {
 
     #region Public Properties
 
-    public int Width { get; private set; }
+    public uint Width { get; private set; }
 
-    public int Height { get; private set; }
+    public uint Height { get; private set; }
 
-    public uint ComponentCount { get; private set; }
+    public int ComponentCount { get; private set; }
 
     public uint Id { get; private set; }
 
-    public PixelInternalFormat Internalformat { get; private set; } 
+    public PixelInternalFormat Internalformat { get; private set; }
 
     public PixelFormat Format { get; private set; }
 
@@ -25,8 +25,8 @@ namespace OpenGL {
 
     #region Public Constructors
 
-    public GLTexture2D(int width, int height, uint componentCount = 4,
-                       int magFilter = (int)TextureMagFilter.Nearest, int minFilter = (int)TextureMinFilter.Nearest,
+    public GLTexture2D(uint width, uint height, int componentCount = 4,
+                       TextureMagFilter magFilter = TextureMagFilter.Nearest, TextureMinFilter minFilter = TextureMinFilter.Nearest,
                        int wrapX = (int)TextureWrapMode.Repeat, int wrapY = (int)TextureWrapMode.Repeat) {
       Width = width;
       Height = height;
@@ -41,8 +41,8 @@ namespace OpenGL {
 
       GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS, wrapX);
       GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT, wrapY);
-      GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, magFilter);
-      GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, minFilter);
+      GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)magFilter);
+      GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)minFilter);
     }
 
     #endregion Public Constructors
@@ -51,6 +51,7 @@ namespace OpenGL {
 
     public void Dispose() {
       GL.DeleteTexture(Id);
+      GC.SuppressFinalize(this);
     }
 
     public void SetData(byte[] data) {
@@ -85,7 +86,7 @@ namespace OpenGL {
       GL.PixelStore(PixelStoreParameter.UnpackAlignment, 1);
 
       GL.BindTexture(TextureTarget.Texture2D, Id);
-      GL.TexImage2D(TextureTarget.Texture2D, 0, Internalformat, Width, Height, 0, Format, Type, data);
+      GL.TexImage2D(TextureTarget.Texture2D, 0, Internalformat, (int)Width, (int)Height, 0, Format, Type, data);
     }
 
     #endregion Public Methods

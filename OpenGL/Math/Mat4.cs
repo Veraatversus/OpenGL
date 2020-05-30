@@ -1,8 +1,5 @@
-﻿using Microsoft.VisualBasic;
-using System;
-using System.Net.Http.Headers;
+﻿using System;
 using System.Runtime.InteropServices;
-using System.Runtime.Intrinsics.X86;
 using System.Text;
 
 namespace MathR {
@@ -11,7 +8,7 @@ namespace MathR {
 
     #region Public Properties
 
-    public float[] E { get; set; }
+    public float[] E;
 
     #endregion Public Properties
 
@@ -22,7 +19,6 @@ namespace MathR {
                     0, 0, 1, 0,
                     0, 0, 0, 1) {
     }
-    public static implicit operator IntPtr(Mat4 mat) => Marshal.UnsafeAddrOfPinnedArrayElement(mat.E, 0);
 
     public Mat4(float m11, float m12, float m13, float m14,
         float m21, float m22, float m23, float m24,
@@ -46,6 +42,8 @@ namespace MathR {
     #endregion Public Constructors
 
     #region Public Methods
+
+    public static implicit operator IntPtr(Mat4 mat) => Marshal.UnsafeAddrOfPinnedArrayElement(mat.E, 0);
 
     // binary operators with scalars
     public static Mat4 operator *(Mat4 a, float scalar) => new Mat4(

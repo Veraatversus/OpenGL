@@ -3,14 +3,14 @@ using System.Buffers;
 using System.IO;
 using System.Runtime.InteropServices;
 
-namespace Raytracing {
+namespace OpenGL {
 
   public struct Image {
 
     #region Public Fields
 
-    public int Width;
-    public int Height;
+    public uint Width;
+    public uint Height;
     public int ComponentCount;
     public byte[] data;
 
@@ -94,65 +94,57 @@ namespace Raytracing {
     }
 
     public static Image Load(string filename) {
-      Image texture = new Image();
+      var texture = new Image();
 
       // make sure file exists.
       using var file = new FileStream(filename, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
       if (!file.CanRead)
-        throw new BMPException("Can't open BMP file");
+        throw new BmpException("Can't open BMP file");
 
       using var binaryReader = new BinaryReader(file);
       // make sure file can be read
       UInt16 bfType;
       bfType = binaryReader.ReadUInt16();
-      //if (!file.read((char*)&bfType, sizeof(UInt16)))
-      //throw new BMPException("File could not be read");
       // check if file is a bitmap
       if (bfType != 19778)
-        throw new BMPException("Not a BMP file");
+        throw new BmpException("Not a BMP file");
       // get the file size skip file size and reserved fields of bitmap file header
       binaryReader.BaseStream.Seek(8, SeekOrigin.Current);
       // get the position of the actual bitmap data
-      int bfOffBits = binaryReader.ReadInt32();
-      //if (!file.read((char*)&bfOffBits, sizeof(int)))
-      //  throw new BMPException("Bitmap offset could not be read");
+      var bfOffBits = binaryReader.ReadUInt32();
 
       binaryReader.BaseStream.Seek(4, SeekOrigin.Current);                       // skip size of bitmap info header
-      texture.Width = binaryReader.ReadInt32();   // get the width of the bitmap
-      texture.Height = binaryReader.ReadInt32();  // get the height of the bitmap
+      texture.Width = binaryReader.ReadUInt32();   // get the width of the bitmap
+      texture.Height = binaryReader.ReadUInt32();  // get the height of the bitmap
 
       Int16 biPlanes;
       biPlanes = binaryReader.ReadInt16();   // get the number of planes
 
       if (biPlanes != 1)
-        throw new BMPException("Number of bitplanes was not equal to 1\n");
+        throw new BmpException("Number of bitplanes was not equal to 1\n");
       // get the number of bits per pixel
-      Int16 biBitCount = binaryReader.ReadInt16();
-      //if (!file.read((char*)&biBitCount, sizeof(short)))
-      //  throw new BMPException("Error Reading file\n");
+      var biBitCount = binaryReader.ReadInt16();
 
       // calculate the size of the image in bytes
       int biSizeImage;
       if (biBitCount == 8 || biBitCount == 16 || biBitCount == 24 || biBitCount == 32) {
-        biSizeImage = texture.Width * texture.Height * biBitCount / 8;
+        biSizeImage = (int)texture.Width * (int)texture.Height * biBitCount / 8;
         texture.ComponentCount = biBitCount / 8;
       }
       else {
-        throw new BMPException($"File is {biBitCount} bpp, but this reader only supports 8, 16, 24, or 32 Bpp");
+        throw new BmpException($"File is {biBitCount} bpp, but this reader only supports 8, 16, 24, or 32 Bpp");
       }
 
-      //Array.Resize(ref texture.data, biSizeImage);
 
       // seek to the actual data
       binaryReader.BaseStream.Seek(bfOffBits, SeekOrigin.Begin);
       texture.data = binaryReader.ReadBytes(biSizeImage);
-      //if (!file.read((char*)texture.data.data(), biSizeImage))
-      //  throw new BMPException("Error loading file");
+
       binaryReader.Close();
       file.Close();
       // swap red and blue (bgr -> rgb)
-      for (int i = 0; i < biSizeImage; i += 3) {
-        byte temp = texture.data[i];
+      for (var i = 0; i < biSizeImage; i += 3) {
+        var temp = texture.data[i];
         texture.data[i] = texture.data[i + 2];
         texture.data[i + 2] = temp;
       }
@@ -163,11 +155,17 @@ namespace Raytracing {
     #endregion Public Methods
   }
 
-  public class BMPException : Exception {
+  public class BmpException : Exception {
 
     #region Public Constructors
 
-    public BMPException(string msg) : base(msg) {
+    public BmpException(string msg) : base(msg) {
+    }
+
+    public BmpException() {
+    }
+
+    public BmpException(string message, Exception innerException) : base(message, innerException) {
     }
 
     #endregion Public Constructors
