@@ -1,15 +1,20 @@
-﻿using MathR;
-using Pencil.Gaming;
+﻿using Pencil.Gaming;
 using Pencil.Gaming.Graphics;
 using System;
 using static Pencil.Gaming.Glfw;
 namespace OpenGL {
   public static class Program {
+    static bool bounce = true;
+    static ParticleSystem particleSystem;
+    static readonly Vec3[] colors = new[] { ParticleSystem.RandomColor, (1, 0, 0), (0, 1, 0), (0, 0, 1), (1, 1, 0), (0, 1, 1), (1, 0, 1) };
+    static uint currentColor;
+    static readonly Vec3[] accelerations = new Vec3[] { (0, 0, 0), (0, -0.005f, 0), (0, 0.005f, 0) };
+    static uint currentAcceleration;
 
     private static int Main(string[] _) {
       using var gl = new GLEnv(640, 480, "Interactive Late Night Coding");
-
-      var sphere = Tesselation.GenSphere(new Vec3(0, 0, 0), 0.7f, 50, 50);
+      gl.OnKeyPressed += KeyCallback;
+      var sphere = Tesselation.GenSphere(new Vec3(0, 0, 0), 0.4f, 50, 50);
 
       using var vbBallPos = new GLBuffer(BufferTarget.ArrayBuffer)
         .SetData(sphere.Vertices, 3);
@@ -27,47 +32,45 @@ namespace OpenGL {
         .SetData(sphere.Indices);
 
       var ballAlbedoImage = BMP.Load("Pics/ballAlbedo.bmp");
-      var ballAlbedo = new GLTexture2D(ballAlbedoImage, TextureMagFilter.Linear, TextureMinFilter.Linear);
+      using var ballAlbedo = new GLTexture2D(ballAlbedoImage, TextureMagFilter.Linear, TextureMinFilter.Linear);
 
       var ballNormalImage = BMP.Load("Pics/ballNormal.bmp");
-      var ballNormalMap = new GLTexture2D(ballNormalImage, TextureMagFilter.Linear, TextureMinFilter.Linear);
+      using var ballNormalMap = new GLTexture2D(ballNormalImage, TextureMagFilter.Linear, TextureMinFilter.Linear);
 
       // generate wall geoemtry (for all 5 walls)
       var square = Tesselation.GenRectangle(new Vec3(0, 0, 0), 4.0f, 4.0f);
       using var vbWallPos = new GLBuffer(BufferTarget.ArrayBuffer)
-        .SetData(sphere.Vertices, 3);
+        .SetData(square.Vertices, 3);
       using var vbWallNorm = new GLBuffer(BufferTarget.ArrayBuffer)
-        .SetData(sphere.Normals, 3);
+        .SetData(square.Normals, 3);
       using var vbWallTan = new GLBuffer(BufferTarget.ArrayBuffer)
-        .SetData(sphere.Tangents, 3);
+        .SetData(square.Tangents, 3);
       using var vbWallTc = new GLBuffer(BufferTarget.ArrayBuffer)
-        .SetData(sphere.TexCoords, 2);
+        .SetData(square.TexCoords, 2);
       using var ibWall = new GLBuffer(BufferTarget.ElementArrayBuffer)
-        .SetData(sphere.Indices);
+        .SetData(square.Indices);
 
       // load brick wall textures (sides
-      var brickWallAlbedoImage = BMP.Load("Pics/floorAlbedo.bmp");
-      var brickWallAlbedo = new GLTexture2D(brickWallAlbedoImage, TextureMagFilter.Linear, TextureMinFilter.Linear);
+      var brickWallAlbedoImage = BMP.Load("Pics/brickWallAlbedo.bmp");
+      using var brickWallAlbedo = new GLTexture2D(brickWallAlbedoImage, TextureMagFilter.Linear, TextureMinFilter.Linear);
 
       var brickWallNormalImage = BMP.Load("Pics/brickWallNormal.bmp");
-      var brickWallNormalMap = new GLTexture2D(brickWallNormalImage, TextureMagFilter.Linear, TextureMinFilter.Linear);
+      using var brickWallNormalMap = new GLTexture2D(brickWallNormalImage, TextureMagFilter.Linear, TextureMinFilter.Linear);
 
       // load brick wall textures (floor)
       var floorAlbedoImage = BMP.Load("Pics/floorAlbedo.bmp");
-      var floorAlbedo = new GLTexture2D(floorAlbedoImage, TextureMagFilter.Linear, TextureMinFilter.Linear);
+      using var floorAlbedo = new GLTexture2D(floorAlbedoImage, TextureMagFilter.Linear, TextureMinFilter.Linear);
 
       var floorNormalImage = BMP.Load("Pics/floorNormal.bmp");
-      var floorNormalMap = new GLTexture2D(floorNormalImage, TextureMagFilter.Linear, TextureMinFilter.Linear);
+      using var floorNormalMap = new GLTexture2D(floorNormalImage, TextureMagFilter.Linear, TextureMinFilter.Linear);
 
       // load brick wall textures (ceiling)
       var ceilingAlbedoImage = BMP.Load("Pics/ceilingAlbedo.bmp");
-      var ceilingAlbedo = new GLTexture2D(ceilingAlbedoImage, TextureMagFilter.Linear, TextureMinFilter.Linear);
+      using var ceilingAlbedo = new GLTexture2D(ceilingAlbedoImage, TextureMagFilter.Linear, TextureMinFilter.Linear);
 
       var ceilingNormalImage = BMP.Load("Pics/ceilingNormal.bmp");
-      var ceilingNormalMap = new GLTexture2D(ceilingNormalImage, TextureMagFilter.Linear, TextureMinFilter.Linear);
+      using var ceilingNormalMap = new GLTexture2D(ceilingNormalImage, TextureMagFilter.Linear, TextureMinFilter.Linear);
 
-
-      var program = GLProgram.CreateFromFile("Shader/vertex.glsl", "Shader/fragment.glsl");
 
       // setup normal mapping shader
       var progNormalMap = GLProgram.CreateFromFile("Shader/normalMapVertex.glsl", "Shader/normalMapFragment.glsl");
@@ -102,9 +105,6 @@ namespace OpenGL {
       var upVec = new Vec3(0, 1, 0);
       var v = Mat4.LookAt(lookFromVec, lookAtVec, upVec);
 
-      var particles = new ParticleSystem(1000, new Vec3(0, 0, 0), 0.1f, new Vec3(0, -0.01f, 0), new Vec3(-1.9f, -1.9f, -1.9f), new Vec3(1.9f, 1.9f, 1.9f), 200);
-
-
       do {
 
         // setup viewport and clear buffers
@@ -133,7 +133,7 @@ namespace OpenGL {
         ibBall.Bind();
 
         // setup transformations
-        var mBall = Mat4.Translation(new Vec3(0.0f, 0.0f, 0.5f)) * Mat4.RotationX(Convert.ToSingle(GetTime() * 57)) * Mat4.Translation(new Vec3(0.5f, 0.0f, 0.0f)) * Mat4.RotationY(Convert.ToSingle(GetTime() * 17));
+        var mBall = Mat4.Translation(new Vec3(0.0f, 0.0f, 0.8f)) * Mat4.RotationX(Convert.ToSingle(GetTime() * 157)) * Mat4.Translation(new Vec3(0.8f, 0.0f, 0.0f)) * Mat4.RotationY(Convert.ToSingle(GetTime() * 47));
         progNormalMap.SetUniform(texRescaleLocationNormalMap, 1.0f);
         progNormalMap.SetUniform(mvpLocationNormalMap, mBall * v * p);
         progNormalMap.SetUniform(mLocationNormalMap, mBall);
@@ -167,7 +167,7 @@ namespace OpenGL {
 
         // ************* the right wall
         var mRightWall = Mat4.RotationY(-90) * Mat4.Translation(2.0f, 0.0f, 0.0f);
-        progNormalMap.SetUniform(mvpLocationNormalMap, mRightWall* v*p);
+        progNormalMap.SetUniform(mvpLocationNormalMap, mRightWall * v * p);
         progNormalMap.SetUniform(mLocationNormalMap, mRightWall);
         progNormalMap.SetUniform(mitLocationNormalMap, Mat4.Inverse(mRightWall), true);
 
@@ -176,7 +176,7 @@ namespace OpenGL {
 
         // ************* the top wall
         var mTopWall = Mat4.RotationX(90) * Mat4.Translation(0.0f, 2.0f, 0.0f);
-        progNormalMap.SetUniform(mvpLocationNormalMap, mTopWall* v*p);
+        progNormalMap.SetUniform(mvpLocationNormalMap, mTopWall * v * p);
         progNormalMap.SetUniform(mLocationNormalMap, mTopWall);
         progNormalMap.SetUniform(mitLocationNormalMap, Mat4.Inverse(mTopWall), true);
 
@@ -189,7 +189,7 @@ namespace OpenGL {
         // ************* the bottom wall
 
         var mBottomWall = Mat4.RotationX(-90) * Mat4.Translation(0.0f, -2.0f, 0.0f);
-        progNormalMap.SetUniform(mvpLocationNormalMap, mBottomWall* v*p);
+        progNormalMap.SetUniform(mvpLocationNormalMap, mBottomWall * v * p);
         progNormalMap.SetUniform(mLocationNormalMap, mBottomWall);
         progNormalMap.SetUniform(mitLocationNormalMap, Mat4.Inverse(mBottomWall), true);
 
@@ -202,7 +202,7 @@ namespace OpenGL {
         // ************* the back wall
 
         var mBackWall = Mat4.Translation(0.0f, 0.0f, -2.0f);
-        progNormalMap.SetUniform(mvpLocationNormalMap, mBackWall* v*p);
+        progNormalMap.SetUniform(mvpLocationNormalMap, mBackWall * v * p);
         progNormalMap.SetUniform(mLocationNormalMap, mBackWall);
         progNormalMap.SetUniform(mitLocationNormalMap, Mat4.Inverse(mBackWall), true);
 
@@ -210,13 +210,37 @@ namespace OpenGL {
         GL.DrawElements(BeginMode.Triangles, square.Indices.Length, DrawElementsType.UnsignedInt, 0);
 
         // ************* particles
-        particles.render(v, p);
-        particles.update();
+        if (particleSystem == null)
+          particleSystem = new ParticleSystem(2000, mBall * (0.0f, 0.0f, 0.0f), 0.1f, accelerations[currentAcceleration], (-1.9f, -1.9f, -1.9f), (1.9f, 1.9f, 1.9f), 200, 100);
+
+        particleSystem.PointSize = (float)dim.Height / 30;
+        particleSystem.Center = mBall * (0.0f, 0.0f, 0.0f);
+
+        particleSystem.Render(v, p);
+        particleSystem.Update();
 
         gl.EndOfFrame();
       } while (!gl.ShouldClose());
 
       return 0;
     }
+
+    private static void KeyCallback(Key key, int scancode, KeyAction action, KeyModifiers mods) {
+      if (key == Key.B && action == KeyAction.Press) {
+        bounce = !bounce;
+        particleSystem.SetBounce(bounce);
+      }
+
+      if (key == Key.C && action == KeyAction.Press) {
+        currentColor = (uint)((currentColor + 1) % colors.Length);
+        particleSystem.SetColor(colors[currentColor]);
+      }
+
+      if (key == Key.A && action == KeyAction.Press) {
+        currentAcceleration = (uint)((currentAcceleration + 1) % accelerations.Length);
+        particleSystem.SetAcceleration(accelerations[currentAcceleration]);
+      }
+    }
+
   }
 }

@@ -1,56 +1,52 @@
-﻿using MathR;
-using System;
-using System.Collections.Generic;
-using System.Text;
+﻿namespace OpenGL {
 
-namespace OpenGL {
   public class Particle {
-    Vec3 position;
-    Vec3 direction;
-    Vec3 acceleration;
-    Vec3 color;
-    float opacity;
-    bool bounce;
 
-    uint maxAge;
-    uint age;
+    #region Public Properties
 
-    Vec3 minPos;
-    Vec3 maxPos;
+    public Vec3 Color { get; set; }
+
+    #endregion Public Properties
+
+    #region Public Constructors
+
     public Particle(Vec3 position, Vec3 direction, Vec3 acceleration,
                     Vec3 color, float opacity, uint maxAge, Vec3 minPos,
                     Vec3 maxPos, bool bounce) {
       this.position = position;
       this.direction = direction;
-      this.acceleration = acceleration;
-      this.color = color;
+      this.Acceleration = acceleration;
+      this.Color = color;
       this.opacity = opacity;
-      this.bounce = bounce;
+      this.Bounce = bounce;
       this.maxAge = maxAge;
       this.age = 0;
       this.minPos = minPos;
       this.maxPos = maxPos;
     }
-    public bool isDead() => age >= maxAge;
-    public void setBounce(bool bounce) { this.bounce = bounce; }
-    public void setAcceleration(Vec3 acceleration) { this.acceleration = acceleration; }
-   
-    public void update() {
+
+    #endregion Public Constructors
+
+    #region Public Methods
+
+    public bool IsDead() => age >= maxAge;
+
+    public void Update() {
       age++;
-      if (isDead()) {
+      if (IsDead()) {
         opacity = 0.0f;
         return;
       }
 
       var nextPosition = position + direction;
 
-      if (bounce) {
+      if (Bounce) {
         if (nextPosition.X < minPos.X || nextPosition.X > maxPos.X)
-          direction = direction * new Vec3(-0.5f, 0.0f, 0.0f);
+          direction *= new Vec3(-0.5f, 0.0f, 0.0f);
         if (nextPosition.Y < minPos.Y || nextPosition.Y > maxPos.Y)
-          direction = direction * new Vec3(0.0f, -0.5f, 0.0f);
+          direction *= new Vec3(0.0f, -0.5f, 0.0f);
         if (nextPosition.Z < minPos.Z || nextPosition.Z > maxPos.Z)
-          direction = direction * new Vec3(0.0f, 0.0f, -0.5f);
+          direction *= new Vec3(0.0f, 0.0f, -0.5f);
         nextPosition = position + direction;
       }
       else {
@@ -58,24 +54,42 @@ namespace OpenGL {
           nextPosition.Y < minPos.Y || nextPosition.Y > maxPos.Y ||
           nextPosition.Z < minPos.Z || nextPosition.Z > maxPos.Z) {
           direction = new Vec3(0, 0, 0);
-          acceleration = new Vec3(0, 0, 0);
+          Acceleration = new Vec3(0, 0, 0);
           nextPosition = position;
         }
       }
       position = nextPosition;
-      direction = direction + acceleration;
+      direction += Acceleration;
     }
 
-    public float[] getData() {
-      return new[] { position.X, position.Y, position.Z, color.X, color.Y, color.Z, opacity };
+    public float[] GetData() {
+      return new[] { position.X, position.Y, position.Z, Color.X, Color.Y, Color.Z, opacity };
     }
 
-    public void restart(Vec3 position, Vec3 direction, Vec3 color, float opacity) {
+    public void Restart(Vec3 position, Vec3 direction, Vec3 color, float opacity, uint maxAge) {
       this.position = position;
       this.direction = direction;
-      this.color = color;
+      this.Color = color;
       this.opacity = opacity;
+      this.maxAge = maxAge;
+
       age = 0;
     }
+
+    #endregion Public Methods
+
+    #region Private Fields
+
+    private Vec3 position;
+    private Vec3 direction;
+    public Vec3 Acceleration { get; set; }
+    private float opacity;
+    public bool Bounce { get; set; }
+    private uint maxAge;
+    private uint age;
+    private readonly Vec3 minPos;
+    private readonly Vec3 maxPos;
+
+    #endregion Private Fields
   }
 }

@@ -24,18 +24,14 @@ GLEnv::GLEnv(uint32_t w, uint32_t h, uint32_t s, const std::string& title, bool 
 	glfwWindowHint(GLFW_SAMPLES, s);
 	
 	glfwWindowHint(GLFW_SAMPLES, 4);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
-/*	
+
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, major);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, minor);
 	
 	if (major > 4 || (major == 3 && minor >= 2)) {
 		glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 		glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);	
-	} 
-	
-	*/
+	}
 
 	window = glfwCreateWindow(w, h, title.c_str(), nullptr, nullptr);
 	if (window == nullptr) {  

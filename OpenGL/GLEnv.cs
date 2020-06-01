@@ -14,7 +14,7 @@ namespace OpenGL {
 
     #region Public Constructors
 
-    public GLEnv(int width, int height, string titel, int samples = 4) {
+    public GLEnv(int width, int height, string titel, int samples = 4 ) {
       SetErrorCallback(ErrorCallback);
       if (!Init()) {
         throw new GLException("Could not init Glfw.");
@@ -74,7 +74,7 @@ namespace OpenGL {
       OnKeyPressed?.Invoke(key, scanCode, action, mods);
     }
 
-    private void ErrorCallback(GlfwError code, string desc) {
+    private static void ErrorCallback(GlfwError code, string desc) {
       Console.WriteLine($"Fatal Error: {desc} ({code})");
     }
 

@@ -1,12 +1,20 @@
-﻿using MathR;
-using Pencil.Gaming.Graphics;
+﻿using Pencil.Gaming.Graphics;
 using System.Linq;
 
 namespace OpenGL {
+
   public class ParticleSystem {
-    public ParticleSystem(int particleCount, Vec3 center, float spreadRadius, Vec3 acceleration, Vec3 minPos, Vec3 maxPos, uint maxAge) {
+
+    #region Public Constructors
+
+    public ParticleSystem(int particleCount, Vec3 center, float spreadRadius,
+                          Vec3 acceleration, Vec3 minPos, Vec3 maxPos,
+                          uint maxAge, float pointSize, Vec3 color = null) {
       Center = center;
       SpreadRadius = spreadRadius;
+      PointSize = pointSize;
+      Color = color ?? RandomColor;
+      MaxAge = maxAge;
       Prog = GLProgram.CreateFromFile("Shader/pointVertex.glsl", "Shader/pointFragment.glsl");
       Sprite = new GLTexture2D(64, 64, 3, TextureMagFilter.Linear, TextureMinFilter.Linear);
 
@@ -16,53 +24,34 @@ namespace OpenGL {
       ColLocation = Prog.GetAttributeLocation("vColor");
       TexLocation = Prog.GetUniformLocation("sprite");
 
-
       // setup texture
       Sprite.SetData(SpritePixel);
 
-      //for (uint i = 0; i < particleCount; ++i) {
-      //  var p = new Particle(computeCenter(), computeDirection(), acceleration, computeColor(), 1.0f, (uint)(maxAge * Rand.Rand01()), minPos, maxPos, true);
-      //  particles.push_back(p);
-      //}
       Particles = Enumerable.Range(0, particleCount)
         .Select(i => {
-          return new Particle(computeCenter(), computeDirection(), acceleration, computeColor(), 1.0f, (uint)(maxAge * Rand.Rand01()), minPos, maxPos, true);
+          return new Particle(ComputeCenter(), ComputeDirection(), acceleration, ComputeColor(), 1.0f, (uint)(maxAge * Rand.Rand01()), minPos, maxPos, true);
         }).ToArray();
     }
 
-    public void setBounce(bool bounce) {
-      foreach (var p in Particles) {
-        p.setBounce(bounce);
-      }
-    }
+    #endregion Public Constructors
 
-    public void render(Mat4 v, Mat4 p) {
-
+    #region Public Methods
+    public void Render(Mat4 v, Mat4 p) {
       Prog.Enable();
       Prog.SetUniform(MvpLocation, v * p);
       Prog.SetTexture(TexLocation, Sprite, 0);
 
       GL.Enable(EnableCap.Blend);
-      GL.BlendFunc(BlendingFactorSrc.SrcAlpha, BlendingFactorDest.One);
+      GL.BlendFunc(BlendingFactorSrc.One, BlendingFactorDest.One);
       GL.BlendEquation(BlendEquationMode.FuncAdd);
-
 
       GL.Disable(EnableCap.CullFace);
 
       GL.DepthMask(false);
 
-      //	float quadratic[] =  { 0.0f, 0.0f, 1.0f };
-      //	glPointParameterfv( GL_DISTANCE_ATTENUATION, quadratic );
-      GL.PointParameter(PointParameterName.PointSizeMin, 1.0f);
-      GL.PointParameter(PointParameterName.PointSizeMax, 65.0f);
+      GL.PointSize(PointSize);
 
-      //	glPointSize(20);
-
-      var data = Particles.SelectMany(p=> p.getData()).ToArray();
-      //foreach (var particel in Particles) {
-      //  float[] pData = particel.getData();
-      //  data.insert(data.end(), pData.begin(), pData.end());
-      //}
+      var data = Particles.SelectMany(p => p.GetData()).ToArray();
 
       using var vbPosColor = new GLBuffer(BufferTarget.ArrayBuffer);
       vbPosColor.SetData(data, 7);
@@ -70,7 +59,6 @@ namespace OpenGL {
       vbPosColor.ConnectVertexAttrib(ColLocation, 4, 3);
 
       GL.Enable(EnableCap.PointSprite);
-      GL.Enable(EnableCap.ProgramPointSize);
 
       GL.DrawArrays(BeginMode.Points, 0, Particles.Length);
 
@@ -79,34 +67,57 @@ namespace OpenGL {
       GL.Enable(EnableCap.CullFace);
       GL.DepthMask(true);
     }
-    public void update() {
+
+    public void Update() {
       foreach (var p in Particles) {
-        p.update();
-        if (p.isDead()) {
-          p.restart(computeCenter(), computeDirection(), computeColor(), 1.0f);
+        p.Update();
+        if (p.IsDead()) {
+          p.Restart(ComputeCenter(), ComputeDirection(), ComputeColor(), 1.0f, (uint)(MaxAge * Rand.Rand01()));
         }
       }
     }
 
-    public void setAcceleration(Vec3 acceleration) {
+    public void SetBounce(bool bounce) {
       foreach (var p in Particles) {
-        p.setAcceleration(acceleration);
+        p.Bounce = bounce;
       }
     }
 
-    private Vec3 computeCenter() {
-      return Center;  // TODO Randomize
+    public void SetAcceleration(Vec3 acceleration) {
+      foreach (var p in Particles) {
+        p.Acceleration = acceleration;
+      }
     }
 
-    private Vec3 computeDirection() {
-      return new Vec3(Rand.Rand11() / 10.0f, Rand.Rand11() / 10.0f, Rand.Rand11() / 10.0f);
-    }
+    #endregion Public Methods
 
-    private Vec3 computeColor() {
-      return Vec3.Random() * Vec3.Random();
-    }
+    #region Public Fields
 
-    private readonly Vec3 Center;
+    public static readonly Vec3 RandomColor = new Vec3(-1, -1, -1);
+
+    #endregion Public Fields
+
+    #region Private Methods
+
+    private Vec3 ComputeCenter() => Center + (MathR.RandomPointInDisc() * SpreadRadius);
+
+    private Vec3 ComputeDirection() => new Vec3(Rand.Rand11() / 100.0f, Rand.Rand11() / 100.0f, Rand.Rand11() / 100.0f);
+
+    private Vec3 ComputeColor() => Color == RandomColor ? Vec3.Random() : Color;
+
+    public void SetColor(Vec3 color) {
+      if (this.Color != color) {
+        this.Color = color;
+        foreach (var p in Particles) {
+          p.Color = ComputeColor();
+        }
+      }
+
+    }
+    #endregion Private Methods
+
+    #region Private Fields
+    public Vec3 Center { get; set; }
     private readonly float SpreadRadius;
     private readonly Particle[] Particles;
     private readonly GLProgram Prog;
@@ -115,6 +126,12 @@ namespace OpenGL {
     private readonly int ColLocation;
     private readonly int TexLocation;
     private readonly GLTexture2D Sprite;
+    private Vec3 Color;
+    private readonly uint MaxAge;
+
+    public float PointSize { get; set; }
+
+
     private readonly byte[] SpritePixel = new byte[] {
       0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,2,2,2,2,2,2,3,3,3,4,4,4,4,4,4,5,5,5,4,4,4,4,4,4,4,4,4,4,4,4,3,3,3,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
       0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,2,2,6,6,6,5,5,5,5,5,5,6,6,6,5,5,5,4,4,4,2,2,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -181,5 +198,7 @@ namespace OpenGL {
       0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,2,2,2,2,2,2,2,2,2,3,3,3,5,5,5,3,3,3,3,3,3,4,4,4,6,6,6,6,6,6,6,6,6,7,7,7,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,3,3,3,3,3,3,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
       0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,2,2,2,4,4,4,5,5,5,6,6,6,6,6,6,5,5,5,5,5,5,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,3,3,3,3,3,3,2,2,2,2,2,2,2,2,2,2,2,2,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
     };
+
+    #endregion Private Fields
   }
 }

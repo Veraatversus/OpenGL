@@ -28,6 +28,9 @@ class Vec3 {
 
 		Vec3 operator*(const float& val) const;
 		Vec3 operator/(const float& val) const;		
+		
+		bool operator == ( const Vec3& other ) const;
+		bool operator != ( const Vec3& other ) const;
 
 		float length() const;
 		float sqlength() const;

@@ -15,9 +15,11 @@ public:
 			 const Vec3& minPos, const Vec3& maxPos, bool bounce);
 	
 	void update();
-	void restart(const Vec3& position, const Vec3& direction, const Vec3& color, float opacity);
+	void restart(const Vec3& position, const Vec3& direction, const Vec3& acceleration, 
+				 const Vec3& color, float opacity, uint32_t maxAge);
 	bool isDead() const {return age >= maxAge;};
-	void setBounce(bool bounce) {this->bounce = bounce;}
+	void setBounce(bool bounce);
+	void setColor(const Vec3& color) {this->color = color;}
 	void setAcceleration(const Vec3& acceleration) {this->acceleration = acceleration;}
 	
 	std::vector<float> getData() const;
@@ -37,18 +39,28 @@ private:
 	Vec3 maxPos;
 };
 
+const Vec3 RANDOM_COLOR{-1.0f,-1.0f,-1.0f};
 
 class ParticleSystem {
 public:
-	ParticleSystem(uint32_t particleCount, const Vec3& center, float spreadRadius, const Vec3& acceleration, const Vec3& minPos, const Vec3& maxPos, uint32_t maxAge);
+	ParticleSystem(	uint32_t particleCount, const Vec3& center, float spreadRadius, 
+					const Vec3& acceleration, const Vec3& minPos, const Vec3& maxPos,
+					uint32_t maxAge, float pointSize, const Vec3& color=RANDOM_COLOR);
 
 	void render(const Mat4& v, const Mat4& p) const;
 	void update();
+	
+	void setCenter(const Vec3& center);
+	void setSize(float pointSize) {this->pointSize = pointSize;}
+	
+	void setColor(const Vec3& color);
 	
 	void setBounce(bool bounce);
 	void setAcceleration(const Vec3& acceleration);
 
 private:
+	ParticleSystem(const ParticleSystem&);
+	
 	Vec3 center;
 	float spreadRadius;	
 	std::vector<Particle> particles;
@@ -60,6 +72,12 @@ private:
 	GLint texLocation;
 	
 	GLTexture2D sprite;
+	
+	Vec3 acceleration;
+	
+	float pointSize;
+	Vec3 color;
+	uint32_t maxAge;
 	
 	Vec3 computeCenter() const;
 	Vec3 computeDirection() const;

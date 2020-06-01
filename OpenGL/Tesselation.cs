@@ -1,5 +1,4 @@
-﻿using MathR;
-using System;
+﻿using System;
 using System.Collections.Generic;
 
 namespace OpenGL {

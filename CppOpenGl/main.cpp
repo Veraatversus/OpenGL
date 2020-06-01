@@ -1,6 +1,7 @@
 #include <iostream>
 #include <vector>
 #include <string>
+#include <memory>
 
 #include <GL/glew.h>  
 #include <GLFW/glfw3.h>  
@@ -15,18 +16,41 @@
 #include "Mat4.h"
 #include "Tesselation.h"
 
+
+bool bounce = true;
+std::shared_ptr<ParticleSystem> particleSystem = nullptr;
+std::vector<Vec3> colors{RANDOM_COLOR,{1,0,0},{0,1,0},{0,0,1},{1,1,0},{0,1,1},{1,0,1}};
+uint32_t currentColor{0};
+std::vector<Vec3> accelerations{Vec3{0,0,0},Vec3{0,-0.005,0},Vec3{0,0.005,0}};
+uint32_t currentAcceleration{0};
   
 static void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {  
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
         glfwSetWindowShouldClose(window, GL_TRUE);
+        
+    if (key == GLFW_KEY_B && action == GLFW_PRESS) {
+        bounce = !bounce;
+        particleSystem->setBounce(bounce); 
+    }
+
+    if (key == GLFW_KEY_C && action == GLFW_PRESS) {
+        currentColor = (currentColor + 1)%colors.size();
+        particleSystem->setColor(colors[currentColor]); 
+    }
+
+    if (key == GLFW_KEY_A && action == GLFW_PRESS) {
+        currentAcceleration = (currentAcceleration + 1)%accelerations.size();
+        particleSystem->setAcceleration(accelerations[currentAcceleration]); 
+    }
+               
 } 
 
 int main(int agrc, char ** argv) {
-    GLEnv gl{640,480,4,"Interactive Late Night Coding Teil 5"};    
+    GLEnv gl{640,480,4,"Interactive Late Night Coding Teil 5", true};
     gl.setKeyCallback(keyCallback);
 
     // generate ball resources and load textures
-    Tesselation sphere{Tesselation::genSphere({0,0,0}, 0.7f, 50, 50)};
+    Tesselation sphere{Tesselation::genSphere({0,0,0}, 0.4f, 50, 50)};
     GLBuffer vbBallPos{GL_ARRAY_BUFFER};
     vbBallPos.setData(sphere.getVertices(),3);
     GLBuffer vbBallNorm{GL_ARRAY_BUFFER};
@@ -109,7 +133,6 @@ int main(int agrc, char ** argv) {
     const Vec3 upVec{0,1,0};
     const Mat4 v{Mat4::lookAt(lookFromVec,lookAtVec,upVec)};
     
-    ParticleSystem particles{1000, Vec3{0,0,0}, 0.1f, Vec3{0,-0.01,0}, Vec3{-1.9f,-1.9f,-1.9f}, Vec3{1.9,1.9,1.9}, 200};
     
     do {
         // setup viewport and clear buffers
@@ -138,7 +161,7 @@ int main(int agrc, char ** argv) {
         ibBall.bind();
         
         // setup transformations
-        const Mat4 mBall{Mat4::translation({0.0f,0.0f,0.5f})*Mat4::rotationX(glfwGetTime()*57)*Mat4::translation({0.5f,0.0f,0.0f})*Mat4::rotationY(glfwGetTime()*17)};
+        const Mat4 mBall{Mat4::translation({0.0f,0.0f,0.8f})*Mat4::rotationX(glfwGetTime()*157)*Mat4::translation({0.8f,0.0f,0.0f})*Mat4::rotationY(glfwGetTime()*47)};
         progNormalMap.setUniform(texRescaleLocationNormalMap, 1.0f);
         progNormalMap.setUniform(mvpLocationNormalMap, {mBall*v*p});
         progNormalMap.setUniform(mLocationNormalMap, mBall);
@@ -173,7 +196,7 @@ int main(int agrc, char ** argv) {
         // ************* the right wall
         
         const Mat4 mRightWall{Mat4::rotationY(-90)*Mat4::translation(2.0f,0.0f,0.0f)};
-        progNormalMap.setUniform(mvpLocationNormalMap, {mRightWall*v*p});
+        progNormalMap.setUniform(mvpLocationNormalMap, mRightWall*v*p);
         progNormalMap.setUniform(mLocationNormalMap, mRightWall);
         progNormalMap.setUniform(mitLocationNormalMap, Mat4::inverse(mRightWall), true);
 
@@ -183,7 +206,7 @@ int main(int agrc, char ** argv) {
         // ************* the top wall
         
         const Mat4 mTopWall{Mat4::rotationX(90)*Mat4::translation(0.0f,2.0f,0.0f)};
-        progNormalMap.setUniform(mvpLocationNormalMap, {mTopWall*v*p});
+        progNormalMap.setUniform(mvpLocationNormalMap, mTopWall*v*p);
         progNormalMap.setUniform(mLocationNormalMap, mTopWall);
         progNormalMap.setUniform(mitLocationNormalMap, Mat4::inverse(mTopWall), true);
 
@@ -217,8 +240,14 @@ int main(int agrc, char ** argv) {
         glDrawElements(GL_TRIANGLES, square.getIndices().size(), GL_UNSIGNED_INT, (void*)0);
 
         // ************* particles
-        particles.render(v,p);
-        particles.update();
+        if (!particleSystem)
+            particleSystem = std::make_shared<ParticleSystem>(2000, mBall * Vec3(0.0f,0.0f,0.0f), 0.1f, accelerations[currentAcceleration], Vec3{-1.9f,-1.9f,-1.9f}, Vec3{1.9,1.9,1.9}, 200, 100);
+
+        particleSystem->setSize(dim.height/30);
+        particleSystem->setCenter(mBall * Vec3(0.0f,0.0f,0.0f));
+        
+        particleSystem->render(v,p);
+        particleSystem->update();
 
         gl.endOfFrame();
     } while (!gl.shouldClose());  

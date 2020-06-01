@@ -9,10 +9,10 @@ namespace OpenGL {
 
     #region Public Fields
 
-    public uint Width;
-    public uint Height;
-    public int ComponentCount;
-    public byte[] data;
+    public uint Width { get; set; }
+    public uint Height { get; set; }
+    public int ComponentCount { get; set; }
+    public byte[] data { get; set; }
 
     #endregion Public Fields
   }

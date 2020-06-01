@@ -83,6 +83,15 @@ Vec3 Vec3::operator/(const float& val) const {
 				e[2]/val};
 }
 
+
+bool Vec3::operator == ( const Vec3& other ) const {
+	return e == other.e;
+}
+
+bool Vec3::operator != ( const Vec3& other ) const {
+	return e != other.e;
+}
+
 float Vec3::length() const {
 	return sqrt(sqlength());
 }

@@ -1,5 +1,4 @@
-﻿using MathR;
-using Pencil.Gaming.Graphics;
+﻿using Pencil.Gaming.Graphics;
 using Pencil.Gaming.MathUtils;
 using System;
 using System.IO;
@@ -146,8 +145,6 @@ namespace OpenGL {
     private static void CheckAndThrowShader(uint shader) {
       GL.GetShader(shader, ShaderParameter.CompileStatus, out var success);
       if (success == 0) {
-        //GL.GetShader(shader, ShaderParameter.InfoLogLength, out var log_length);
-        //log_length = Math.Min(4096, log_length);
         GL.GetShaderInfoLog(Convert.ToInt32(shader), out var log);
 
         throw new ProgramException(log);
@@ -157,8 +154,6 @@ namespace OpenGL {
     private static void CheckAndThrowProgram(uint program) {
       GL.GetProgram(program, ProgramParameter.LinkStatus, out var linked);
       if (linked != 1) {
-        //GL.GetProgram(program,ProgramParameter.InfoLogLength, out var log_length);
-        //log_length = Math.Min(4096, log_length);
         GL.GetProgramInfoLog(Convert.ToInt32(program), out var log);
 
         throw new ProgramException(log);
