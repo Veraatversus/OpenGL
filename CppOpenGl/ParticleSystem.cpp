@@ -75,71 +75,71 @@ ParticleSystem::ParticleSystem(uint32_t particleCount, const Vec3& center, float
 	center(center),
 	spreadRadius(spreadRadius),
 	particles{},
-	prog{GLProgram::createFromFile("pointVertex.glsl", "pointFragment.glsl")},
-	mvpLocation{0},
-	posLocation{0},
-	colLocation{0},
-	texLocation{0},
-	sprite{64,64,3, GL_LINEAR, GL_LINEAR}
-{	
+	prog{ GLProgram::createFromFile("pointVertex.glsl", "pointFragment.glsl") },
+	mvpLocation{ 0 },
+	posLocation{ 0 },
+	colLocation{ 0 },
+	texLocation{ 0 },
+	sprite{ 64,64,3, GL_LINEAR, GL_LINEAR }
+{
 	// setup shader
 	mvpLocation = prog.getUniformLocation("MVP");
 	posLocation = prog.getAttributeLocation("vPos");
 	colLocation = prog.getAttributeLocation("vColor");
-	texLocation = prog.getUniformLocation("sprite"); 
+	texLocation = prog.getUniformLocation("sprite");
 
 	// setup texture
 	sprite.setData(spritePixel);
-	
-	for (uint32_t i = 0;i<particleCount;++i) {
-		Particle p{computeCenter(), computeDirection(), acceleration, computeColor(), 1.0f, uint32_t(maxAge*Rand::rand01()), minPos, maxPos, true};
-		particles.push_back(p);		
+
+	for (uint32_t i = 0; i < particleCount; ++i) {
+		Particle p{ computeCenter(), computeDirection(), acceleration, computeColor(), 1.0f, uint32_t(maxAge * Rand::rand01()), minPos, maxPos, true };
+		particles.push_back(p);
 	}
 }
 
 void ParticleSystem::setBounce(bool bounce) {
 	for (Particle& p : particles) {
 		p.setBounce(bounce);
-	}		
+	}
 }
 
 void ParticleSystem::render(const Mat4& v, const Mat4& p) const {
 	prog.enable();
-	prog.setUniform(mvpLocation, {v*p});
-	prog.setTexture(texLocation, sprite, 0);		
+	prog.setUniform(mvpLocation, { v * p });
+	prog.setTexture(texLocation, sprite, 0);
 
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 	glBlendEquation(GL_FUNC_ADD);
-	
-	
+
+
 	glDisable(GL_CULL_FACE);
 
 	glDepthMask(GL_FALSE);
-		
-//	float quadratic[] =  { 0.0f, 0.0f, 1.0f };
-//	glPointParameterfv( GL_DISTANCE_ATTENUATION, quadratic );
-	glPointParameterf( GL_POINT_SIZE_MIN, 1.0f );
-	glPointParameterf( GL_POINT_SIZE_MAX, 65.0f);
-	
-//	glPointSize(20);
+
+	//	float quadratic[] =  { 0.0f, 0.0f, 1.0f };
+	//	glPointParameterfv( GL_DISTANCE_ATTENUATION, quadratic );
+	glPointParameterf(GL_POINT_SIZE_MIN, 1.0f);
+	glPointParameterf(GL_POINT_SIZE_MAX, 65.0f);
+
+	//	glPointSize(20);
 
 	std::vector<float> data;
 	for (const Particle& p : particles) {
-		std::vector<float> pData{p.getData()};			
+		std::vector<float> pData{ p.getData() };
 		data.insert(data.end(), pData.begin(), pData.end());
-	}	
-	
-	GLBuffer vbPosColor{GL_ARRAY_BUFFER};
-	vbPosColor.setData(data,7);	
+	}
+
+	GLBuffer vbPosColor{ GL_ARRAY_BUFFER };
+	vbPosColor.setData(data, 7);
 	vbPosColor.connectVertexAttrib(posLocation, 3);
 	vbPosColor.connectVertexAttrib(colLocation, 4, 3);
-		
+
 	glEnable(GL_POINT_SPRITE);
-	glEnable( GL_PROGRAM_POINT_SIZE );	
+	glEnable(GL_PROGRAM_POINT_SIZE);
 
 	glDrawArrays(GL_POINTS, 0, particles.size());
-	
+
 	glDisable(GL_POINT_SPRITE);
 	glDisable(GL_BLEND);
 	glEnable(GL_CULL_FACE);
@@ -152,9 +152,9 @@ void ParticleSystem::update() {
 		if (p.isDead()) {
 			p.restart(computeCenter(), computeDirection(), computeColor(), 1.0f);
 		}
-	}	
+	}
 }
-	
+
 void ParticleSystem::setAcceleration(const Vec3& acceleration) {
 	for (Particle& p : particles) {
 		p.setAcceleration(acceleration);
@@ -166,16 +166,16 @@ Vec3 ParticleSystem::computeCenter() const {
 }
 
 Vec3 ParticleSystem::computeDirection() const {
-	return {Rand::rand11()/10.0f,Rand::rand11()/10.0f,Rand::rand11()/10.0f};
+	return { Rand::rand11() / 10.0f,Rand::rand11() / 10.0f,Rand::rand11() / 10.0f };
 }
 
 Vec3 ParticleSystem::computeColor() const {
 	return Vec3::random() * Vec3::random();
 }
 
-Particle::Particle( const Vec3& position, const Vec3& direction, const Vec3& acceleration, 
-					const Vec3& color, float opacity, uint32_t maxAge, const Vec3& minPos, const Vec3& maxPos,
-					bool bounce) :
+Particle::Particle(const Vec3& position, const Vec3& direction, const Vec3& acceleration,
+	const Vec3& color, float opacity, uint32_t maxAge, const Vec3& minPos, const Vec3& maxPos,
+	bool bounce) :
 	position(position),
 	direction(direction),
 	acceleration(acceleration),
@@ -192,36 +192,37 @@ Particle::Particle( const Vec3& position, const Vec3& direction, const Vec3& acc
 
 void Particle::update() {
 	age++;
-	if(isDead()) {
+	if (isDead()) {
 		opacity = 0.0f;
 		return;
 	}
 
-	Vec3 nextPosition{position + direction};
-	
+	Vec3 nextPosition{ position + direction };
+
 	if (bounce) {
-		if (nextPosition.x() < minPos.x() || nextPosition.x() > maxPos.x())	direction = direction * Vec3(-0.5f,0.0f,0.0f);
-		if (nextPosition.y() < minPos.y() || nextPosition.y() > maxPos.y())	direction = direction * Vec3(0.0f,-0.5f,0.0f);
-		if (nextPosition.z() < minPos.z() || nextPosition.z() > maxPos.z())	direction = direction * Vec3(0.0f,0.0f,-0.5f);
+		if (nextPosition.x() < minPos.x() || nextPosition.x() > maxPos.x())	direction = direction * Vec3(-0.5f, 0.0f, 0.0f);
+		if (nextPosition.y() < minPos.y() || nextPosition.y() > maxPos.y())	direction = direction * Vec3(0.0f, -0.5f, 0.0f);
+		if (nextPosition.z() < minPos.z() || nextPosition.z() > maxPos.z())	direction = direction * Vec3(0.0f, 0.0f, -0.5f);
 		nextPosition = position + direction;
-	} else {
+	}
+	else {
 		if (nextPosition.x() < minPos.x() || nextPosition.x() > maxPos.x() ||
 			nextPosition.y() < minPos.y() || nextPosition.y() > maxPos.y() ||
 			nextPosition.z() < minPos.z() || nextPosition.z() > maxPos.z()) {
-			direction = Vec3(0,0,0);
-			acceleration = Vec3(0,0,0);
+			direction = Vec3(0, 0, 0);
+			acceleration = Vec3(0, 0, 0);
 			nextPosition = position;
 		}
 	}
 	position = nextPosition;
-	direction = direction + acceleration;	
-}
-	
-std::vector<float> Particle::getData() const {
-	return {position.x(), position.y(), position.z(), color.x(), color.y(), color.z(), opacity};
+	direction = direction + acceleration;
 }
 
-void Particle::restart(const Vec3& position, const Vec3& direction, const Vec3& color, float opacity) {	
+std::vector<float> Particle::getData() const {
+	return { position.x(), position.y(), position.z(), color.x(), color.y(), color.z(), opacity };
+}
+
+void Particle::restart(const Vec3& position, const Vec3& direction, const Vec3& color, float opacity) {
 	this->position = position;
 	this->direction = direction;
 	this->color = color;

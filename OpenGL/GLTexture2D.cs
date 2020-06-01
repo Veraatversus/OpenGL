@@ -24,7 +24,15 @@ namespace OpenGL {
     #endregion Public Properties
 
     #region Public Constructors
-
+    public GLTexture2D(Image image,
+                       TextureMagFilter magFilter = TextureMagFilter.Nearest,
+                       TextureMinFilter minFilter = TextureMinFilter.Nearest,
+                       int wrapX = (int)TextureWrapMode.Repeat,
+                       int wrapY = (int)TextureWrapMode.Repeat)
+                       : this(image.Width, image.Height, image.ComponentCount,
+                             magFilter, minFilter, wrapX, wrapY) {
+      SetData(image.data);
+    }
     public GLTexture2D(uint width, uint height, int componentCount = 4,
                        TextureMagFilter magFilter = TextureMagFilter.Nearest, TextureMinFilter minFilter = TextureMinFilter.Nearest,
                        int wrapX = (int)TextureWrapMode.Repeat, int wrapY = (int)TextureWrapMode.Repeat) {

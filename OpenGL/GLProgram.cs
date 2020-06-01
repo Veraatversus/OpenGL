@@ -65,7 +65,7 @@ namespace OpenGL {
       return GL.GetUniformLocation(glProgram, variable);
     }
 
-    public int GetAttribLocation(string variable) {
+    public int GetAttributeLocation(string variable) {
       return GL.GetAttribLocation(glProgram, variable);
     }
 

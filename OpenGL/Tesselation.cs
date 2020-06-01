@@ -107,6 +107,46 @@ namespace OpenGL {
       };
     }
 
+    public static Tesselation GenRectangle(Vec3 center, float width, float height) {
+      var hWidth = width / 2.0f;
+      var hHeight = height / 2.0f;
+
+      var tess = new Tesselation {
+        Vertices = new[] {
+          -hWidth, -hHeight, 0.0f,
+           hWidth, -hHeight, 0.0f,
+           hWidth,  hHeight, 0.0f,
+          -hWidth,  hHeight, 0.0f
+        },
+
+        Normals = new[] {
+          0.0f, 0.0f, 1.0f,
+          0.0f, 0.0f, 1.0f,
+          0.0f, 0.0f, 1.0f,
+          0.0f, 0.0f, 1.0f
+        },
+
+        Tangents = new[] {
+          1.0f, 0.0f, 0.0f,
+          1.0f, 0.0f, 0.0f,
+          1.0f, 0.0f, 0.0f,
+          1.0f, 0.0f, 0.0f
+        },
+
+        TexCoords = new[] {
+          0.0f, 0.0f,
+          1.0f, 0.0f,
+          1.0f, 1.0f,
+          0.0f, 1.0f
+        },
+
+        Indices = new uint[] { 0, 1, 2, 0, 2, 3 }
+
+      };
+
+      return tess;
+    }
+
     #endregion Public Methods
   }
 }

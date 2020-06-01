@@ -49,9 +49,9 @@ namespace OpenGL {
         float _ => VertexAttribPointerType.Float,
         _ => VertexAttribPointerType.Byte
       };
-
+      size = elemSize * data.Length;
       GL.BindBuffer(target, bufferID);
-      GL.BufferData(target, (IntPtr)(elemSize * data.Length), data, BufferUsageHint.StaticDraw);
+      GL.BufferData(target, (IntPtr)size, data, BufferUsageHint.StaticDraw);
       return this;
     }
 
@@ -74,6 +74,7 @@ namespace OpenGL {
     private int elemSize;
     private int stride;
     private VertexAttribPointerType type;
+    private int size;
 
     #endregion Private Fields
   }
